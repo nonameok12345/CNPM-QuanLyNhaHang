@@ -1,0 +1,34 @@
+﻿@model List<test.Models.Ban>
+@{
+    ViewData["Title"] = "Gọi món tại quán";
+    var laNhanVien = User.IsInRole("QuanLy") || User.IsInRole("NhanVien");
+}
+
+<div class="page-header text-center">
+    <h1>📱 Gọi món tại quán</h1>
+    <p class="mb-0">Đang ngồi tại nhà hàng? Không cần đăng nhập, chỉ cần quét mã QR trên bàn.</p>
+</div>
+
+<div class="row g-4 justify-content-center mb-4">
+    <div class="col-md-4"><div class="card card-food p-4 h-100 text-center"><div class="fs-1">1️⃣</div><h5>Quét QR trên bàn</h5><p class="mb-0">Mở camera điện thoại và quét mã QR dán trên bàn bạn ngồi.</p></div></div>
+    <div class="col-md-4"><div class="card card-food p-4 h-100 text-center"><div class="fs-1">2️⃣</div><h5>Ngồi bàn &amp; chọn món</h5><p class="mb-0">Bấm "Ngồi bàn này", rồi thêm món vào giỏ.</p></div></div>
+    <div class="col-md-4"><div class="card card-food p-4 h-100 text-center"><div class="fs-1">3️⃣</div><h5>Gửi món</h5><p class="mb-0">Món được ghi vào hóa đơn của bàn. Dùng xong gọi nhân viên thanh toán.</p></div></div>
+</div>
+
+<p class="text-center">Muốn giữ bàn trước khi đến? <a asp-controller="DatBan" asp-action="Index">Đặt bàn trước (từ xa)</a></p>
+
+@if (laNhanVien)
+{
+    <h4 class="section-title mt-5 mb-3">Dành cho nhân viên: mở thử trang gọi món của từng bàn</h4>
+    <div class="mb-3">
+        <a asp-controller="QuanLyBan" asp-action="QR" class="btn btn-restaurant">🖨️ In QR tất cả bàn</a>
+    </div>
+    <div class="row g-2">
+        @foreach (var b in Model)
+        {
+            <div class="col-6 col-md-3">
+                <a class="btn btn-outline-secondary w-100" href="@Url.Action("Index", "TaiQuan", new { token = b.MaQR })">Bàn @b.SoBan</a>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,54 @@
+﻿@model test.Models.MonAn
+@{
+    ViewData["Title"] = "Sửa món ăn";
+}
+
+<div class="page-header">
+    <h2>✏️ Sửa món ăn</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 500px;">
+    <form asp-action="Edit" asp-route-id="@Model.MaMon" method="post" enctype="multipart/form-data">
+        <input type="hidden" asp-for="MaMon" />
+        <input type="hidden" asp-for="HinhAnh" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tên món</label>
+            <input asp-for="TenMon" class="form-control" />
+            <span asp-validation-for="TenMon" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Giá (đ)</label>
+            <input asp-for="Gia" class="form-control" />
+            <span asp-validation-for="Gia" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Danh mục</label>
+            <select asp-for="MaDanhMuc" class="form-control">
+                <option value="">-- Chọn danh mục --</option>
+                @foreach (var dm in (List<test.Models.DanhMuc>)ViewBag.DanhMucList)
+                {
+                    <option value="@dm.MaDanhMuc">@dm.TenDanhMuc</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Hình ảnh hiện tại</label><br />
+            @if (!string.IsNullOrEmpty(Model.HinhAnh))
+            {
+                <img src="@Model.HinhAnh" alt="@Model.TenMon" style="width:150px;height:110px;object-fit:cover;border-radius:8px;" />
+            }
+            else
+            {
+                <p class="mb-0"><em>Chưa có ảnh</em></p>
+            }
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Đổi ảnh mới <span class="text-muted fw-normal">(bỏ trống nếu giữ ảnh cũ)</span></label>
+            <input type="file" name="anhUpload" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+        </div>
+        <button type="submit" class="btn btn-restaurant w-100">Lưu thay đổi</button>
+    </form>
+</div>
+<a asp-action="Index" class="d-inline-block mt-3">← Quay lại quản lý thực đơn</a>

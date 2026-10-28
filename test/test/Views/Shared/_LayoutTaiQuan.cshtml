@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Nhà Hàng Siêu Việt</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* Giao diện gọn cho điện thoại: khách quét QR không cần thanh menu đầy đủ của website */
+        .tq-top { background: var(--brand-red); color: #fff; position: sticky; top: 0; z-index: 1030; }
+        .tq-top a { color: var(--brand-cream); text-decoration: none; font-weight: 600; font-size: .9rem; }
+        .tq-top a:hover { color: var(--brand-gold); }
+        .tq-bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; padding: .6rem 1rem;
+                     background: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,.18); }
+        body.co-thanh-duoi { padding-bottom: 80px; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100 @(ViewData["ThanhDuoi"] != null ? "co-thanh-duoi" : "")">
+    @{
+        var token = ViewData["Token"] as Guid?;
+    }
+    <header class="tq-top">
+        <div class="container d-flex justify-content-between align-items-center py-2">
+            <span class="fw-bold">🍜 Nhà Hàng Siêu Việt @(ViewData["SoBan"] != null ? "· Bàn " + ViewData["SoBan"] : "")</span>
+            @if (token != null)
+            {
+                <span class="d-flex gap-3">
+                    <a href="@Url.Action("Menu", "TaiQuan", new { token })">Thực đơn</a>
+                    <a href="@Url.Action("Gio", "TaiQuan", new { token })">Giỏ</a>
+                    <a href="@Url.Action("DaGoi", "TaiQuan", new { token })">Đã gọi</a>
+                </span>
+            }
+        </div>
+    </header>
+
+    <div class="container flex-grow-1 pt-3 pb-4">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

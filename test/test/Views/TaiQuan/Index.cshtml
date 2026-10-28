@@ -1,0 +1,50 @@
+﻿@model test.Models.PhienBanTaiQuan
+@{
+    Layout = "~/Views/Shared/_LayoutTaiQuan.cshtml";
+    ViewData["Title"] = "Bàn " + Model.Ban.SoBan;
+    ViewData["SoBan"] = Model.Ban.SoBan;
+}
+
+<div class="text-center py-4">
+    <div style="font-size:4rem;">🪑</div>
+    <h1 class="h2" style="color:var(--brand-red);font-family:Georgia,serif;">Bàn @Model.Ban.SoBan</h1>
+    <p class="text-muted mb-0">@Model.Ban.SoChoNgoi chỗ ngồi</p>
+</div>
+
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+@if (Model.TrangThai == test.Models.TrangThaiPhienBan.CoTheMo)
+{
+    if (Model.DatBan != null)
+    {
+        <div class="alert alert-info">
+            Bàn này đã được đặt trước lúc <strong>@Model.DatBan.NgayGio.ToString("HH:mm")</strong>.
+            Nếu bạn là khách đã đặt bàn, hãy bắt đầu gọi món.
+        </div>
+    }
+    else
+    {
+        <p class="text-center">Bàn đang trống. Bạn ngồi bàn này và gọi món nhé?</p>
+    }
+
+    <form asp-action="MoBan" asp-route-token="@Model.Ban.MaQR" method="post">
+        <button type="submit" class="btn btn-restaurant btn-lg w-100">Ngồi bàn này &amp; gọi món</button>
+    </form>
+}
+else if (Model.TrangThai == test.Models.TrangThaiPhienBan.BanDaDat)
+{
+    <div class="alert alert-warning">
+        Rất tiếc, bàn này đã có khách đặt trước vào lúc
+        <strong>@Model.GioDatKeTiep!.Value.ToString("HH:mm")</strong>.
+        Vui lòng chọn một bàn trống khác hoặc nhờ nhân viên hỗ trợ.
+    </div>
+}
+else if (Model.TrangThai == test.Models.TrangThaiPhienBan.NgungSuDung)
+{
+    <div class="alert alert-secondary">
+        Bàn này tạm ngừng phục vụ. Vui lòng chọn bàn khác hoặc nhờ nhân viên hỗ trợ.
+    </div>
+}

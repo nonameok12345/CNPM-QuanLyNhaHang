@@ -1,0 +1,59 @@
+﻿@model test.Models.GioTaiQuanViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutTaiQuan.cshtml";
+    ViewData["Title"] = "Giỏ món";
+    ViewData["SoBan"] = Model.Ban.SoBan;
+    ViewData["Token"] = Model.Ban.MaQR;
+    var token = Model.Ban.MaQR;
+}
+
+<h2 class="h4 mb-3" style="color:var(--brand-red);font-family:Georgia,serif;">🛒 Giỏ món của bàn @Model.Ban.SoBan</h2>
+
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger py-2">@loi</div>
+}
+
+@if (!Model.Dong.Any())
+{
+    <div class="text-center py-4">
+        <p class="fs-5">Giỏ món đang trống.</p>
+        <a asp-action="Menu" asp-route-token="@token" class="btn btn-restaurant">Chọn món</a>
+    </div>
+}
+else
+{
+    foreach (var d in Model.Dong)
+    {
+        <div class="card card-food mb-2 p-2">
+            <div class="d-flex justify-content-between">
+                <div class="fw-semibold">@d.TenMon</div>
+                <div class="price-tag">@String.Format("{0:N0}", d.ThanhTien) đ</div>
+            </div>
+            <div class="text-muted small mb-2">@String.Format("{0:N0}", d.Gia) đ / phần</div>
+            <div class="d-flex gap-2">
+                <form asp-action="CapNhat" asp-route-token="@token" method="post" class="d-flex gap-1 flex-grow-1">
+                    <input type="hidden" name="maMon" value="@d.MaMon" />
+                    <input type="number" name="soLuong" value="@d.SoLuong" min="0" max="50" class="form-control form-control-sm" style="width:80px" />
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Cập nhật</button>
+                </form>
+                <form asp-action="Xoa" asp-route-token="@token" method="post">
+                    <input type="hidden" name="maMon" value="@d.MaMon" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Bỏ</button>
+                </form>
+            </div>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between fw-bold fs-5 my-3">
+        <span>Tạm tính</span>
+        <span class="price-tag fs-5">@String.Format("{0:N0}", Model.TongTien) đ</span>
+    </div>
+
+    <form asp-action="GuiMon" asp-route-token="@token" method="post">
+        <button type="submit" class="btn btn-restaurant btn-lg w-100">Gửi món cho nhà hàng</button>
+    </form>
+    <p class="text-muted small text-center mt-2">Món sẽ được ghi vào hóa đơn của bàn. Thanh toán khi dùng xong, vui lòng gọi nhân viên.</p>
+
+    <a asp-action="Menu" asp-route-token="@token" class="d-inline-block mt-2">← Chọn thêm món</a>
+}

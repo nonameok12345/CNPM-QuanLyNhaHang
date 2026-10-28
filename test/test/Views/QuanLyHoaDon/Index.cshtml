@@ -1,0 +1,107 @@
+﻿@model List<test.Models.HoaDonDong>
+@{
+    ViewData["Title"] = "Quản lý hóa đơn";
+    var ngay = (DateTime?)ViewBag.Ngay;
+    var ngayChuoi = ngay?.ToString("yyyy-MM-dd") ?? "";
+    var trangThaiLoc = (string?)ViewBag.TrangThai ?? "";
+    var trangThaiList = new[]
+    {
+        test.Models.TrangThaiHoaDon.ChuaThanhToan,
+        test.Models.TrangThaiHoaDon.DaThanhToan,
+        test.Models.TrangThaiHoaDon.DaHuy
+    };
+}
+
+<div class="page-header">
+    <h2>🧾 Quản lý hóa đơn</h2>
+    <p class="mb-0 text-muted">@Model.Count hóa đơn (hiện tối đa 100 hóa đơn mới nhất)</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label mb-0" for="ngay">Ngày lập</label>
+        <input type="date" id="ngay" name="ngay" value="@ngayChuoi" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0" for="trangThai">Trạng thái</label>
+        <select id="trangThai" name="trangThai" class="form-select">
+            <option value="">Tất cả</option>
+            @foreach (var tt in trangThaiList)
+            {
+                <option value="@tt" selected="@(trangThaiLoc == tt)">@tt</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-restaurant">Lọc</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Đặt lại</a>
+    </div>
+    <div class="col text-end">
+        <a asp-action="Tao" class="btn btn-restaurant">+ Lập hóa đơn tại bàn</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <p class="fs-5">Không có hóa đơn nào phù hợp.</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Bàn</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày lập</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th class="text-end">Còn lại</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var h in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">#@h.MaHD</td>
+                        <td>Bàn @h.SoBan</td>
+                        <td>@h.TenKhach</td>
+                        <td>@h.NgayLap.ToString("HH:mm dd/MM/yyyy")</td>
+                        <td class="text-end">@string.Format("{0:N0}", h.TongTien) đ</td>
+                        <td class="text-end">@(h.TrangThai == test.Models.TrangThaiHoaDon.ChuaThanhToan ? string.Format("{0:N0} đ", h.ConLai) : "-")</td>
+                        <td>
+                            @if (h.TrangThai == test.Models.TrangThaiHoaDon.DaThanhToan)
+                            {
+                                <span class="badge bg-success">@h.TrangThai</span>
+                            }
+                            else if (h.TrangThai == test.Models.TrangThaiHoaDon.DaHuy)
+                            {
+                                <span class="badge bg-secondary">@h.TrangThai</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">@h.TrangThai</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@h.MaHD" class="btn btn-sm btn-outline-warning">Xem</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

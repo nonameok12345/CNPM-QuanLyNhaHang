@@ -1,0 +1,45 @@
+﻿@model test.Models.HoaDon
+@{
+    ViewData["Title"] = "Đặt món thành công";
+}
+
+<div class="page-header text-center">
+    <h1>✅ Đặt món thành công</h1>
+    <p class="mb-0">Bàn <strong>@Model.Ban.SoBan</strong> · Mã hóa đơn #@Model.MaHD</p>
+</div>
+
+<p class="text-center">Nhà hàng đã nhận món của bạn, nhân viên sẽ phục vụ sớm nhất.</p>
+
+<div class="table-responsive">
+    <table class="table bg-white">
+        <thead>
+            <tr>
+                <th>Món</th>
+                <th class="text-end">Đơn giá</th>
+                <th class="text-end">Số lượng</th>
+                <th class="text-end">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model.ChiTietHoaDons)
+            {
+                <tr>
+                    <td>@c.MonAn.TenMon</td>
+                    <td class="text-end">@String.Format("{0:N0}", c.DonGia) đ</td>
+                    <td class="text-end">@c.SoLuong</td>
+                    <td class="text-end">@String.Format("{0:N0}", c.SoLuong * c.DonGia) đ</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end fw-bold">Tổng hóa đơn của bàn</td>
+                <td class="text-end price-tag">@String.Format("{0:N0}", Model.TongTien) đ</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<div class="text-center">
+    <a asp-controller="MonAn" asp-action="Index" class="btn btn-restaurant">Gọi thêm món</a>
+</div>

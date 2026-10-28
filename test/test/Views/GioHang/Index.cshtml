@@ -1,0 +1,122 @@
+﻿@model test.Models.GioHangViewModel
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="page-header text-center">
+    <h1>🛒 Giỏ hàng của bạn</h1>
+</div>
+
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+@if (!Model.Dong.Any())
+{
+    <div class="text-center py-5">
+        <p class="fs-5">Giỏ hàng đang trống.</p>
+        <a asp-controller="MonAn" asp-action="Index" class="btn btn-restaurant">Chọn món ngay</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th style="width:90px">Ảnh</th>
+                    <th>Món</th>
+                    <th class="text-end">Đơn giá</th>
+                    <th style="width:200px">Số lượng</th>
+                    <th class="text-end">Thành tiền</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Dong)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(d.HinhAnh))
+                            {
+                                <img src="@d.HinhAnh" alt="@d.TenMon" style="width:70px;height:55px;object-fit:cover;border-radius:6px;" />
+                            }
+                            else
+                            {
+                                <span class="fs-3">🍽️</span>
+                            }
+                        </td>
+                        <td class="fw-semibold">@d.TenMon</td>
+                        <td class="text-end">@String.Format("{0:N0}", d.Gia) đ</td>
+                        <td>
+                            <form asp-action="CapNhat" method="post" class="d-flex gap-1">
+                                <input type="hidden" name="maMon" value="@d.MaMon" />
+                                <input type="number" name="soLuong" value="@d.SoLuong" min="0" max="50" class="form-control form-control-sm" style="width:80px" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Cập nhật</button>
+                            </form>
+                        </td>
+                        <td class="text-end price-tag">@String.Format("{0:N0}", d.ThanhTien) đ</td>
+                        <td class="text-end">
+                            <form asp-action="Xoa" method="post">
+                                <input type="hidden" name="maMon" value="@d.MaMon" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Bỏ</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end fw-bold fs-5">Tổng cộng</td>
+                    <td class="text-end price-tag fs-5">@String.Format("{0:N0}", Model.TongTien) đ</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    if (User.IsInRole(test.Models.VaiTro.KhachHang))
+    {
+        if (Model.DatBanList.Any())
+        {
+            <form asp-action="DatMon" method="post" class="card card-food p-4 mt-3" style="max-width: 480px;">
+                <label class="form-label fw-bold">Gửi món cho lịch đặt bàn nào?</label>
+                <select name="maDatBan" class="form-control mb-3" required>
+                    <option value="">-- Chọn lịch đặt bàn --</option>
+                    @foreach (var d in Model.DatBanList)
+                    {
+                        <option value="@d.MaDatBan">Bàn @d.Ban.SoBan · @d.NgayGio.ToString("HH:mm dd/MM/yyyy") · @d.SoNguoi người</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-restaurant w-100">Xác nhận đặt món</button>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3" style="max-width: 480px;">
+                <p class="mb-2">Bạn chưa có lịch đặt bàn nào. Hãy đặt bàn trước, sau đó quay lại đây để gửi món. Giỏ hàng của bạn vẫn được giữ.</p>
+                <a asp-controller="DatBan" asp-action="Index" class="btn btn-restaurant">Đặt bàn ngay</a>
+            </div>
+        }
+    }
+    else if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="alert alert-warning mt-3" style="max-width: 420px;">
+            Bạn đang đăng nhập bằng tài khoản nhân viên. Hãy đăng xuất rồi đăng nhập bằng tài khoản khách hàng để đặt món.
+        </div>
+    }
+    else
+    {
+        <div class="card card-food p-4 mt-3" style="max-width: 420px;">
+            <h5 class="mb-2">Đăng nhập để đặt bàn và gửi món</h5>
+            <p class="text-muted">Giỏ hàng của bạn sẽ được giữ nguyên sau khi đăng nhập.</p>
+            <div class="d-flex gap-2">
+                <a asp-controller="TaiKhoan" asp-action="DangNhap" asp-route-returnUrl="/DatBan" class="btn btn-restaurant flex-grow-1">Đăng nhập</a>
+                <a asp-controller="TaiKhoan" asp-action="DangKy" asp-route-returnUrl="/DatBan" class="btn btn-outline-secondary flex-grow-1">Đăng ký</a>
+            </div>
+        </div>
+    }
+
+    <a asp-controller="MonAn" asp-action="Index" class="d-inline-block mt-3">← Chọn thêm món</a>
+}

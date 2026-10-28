@@ -1,0 +1,15 @@
+﻿@model List<test.Models.DanhMuc>
+
+@if (Model != null && Model.Count > 0)
+{
+    foreach (var dm in Model)
+    {
+        <li>
+            <a class="dropdown-item" asp-controller="MonAn" asp-action="Index" asp-route-maDanhMuc="@dm.MaDanhMuc">
+                @dm.TenDanhMuc
+            </a>
+        </li>
+    }
+}
+<li><hr class="dropdown-divider" /></li>
+<li><a class="dropdown-item fw-bold" asp-controller="MonAn" asp-action="Index">📋 Xem tất cả</a></li>

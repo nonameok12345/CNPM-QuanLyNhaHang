@@ -1,0 +1,125 @@
+@model test.Models.TrangQuanTriViewModel
+@{
+    ViewData["Title"] = "Trang quản trị";
+    var laQuanLy = User.IsInRole("QuanLy");
+
+    // Mỗi nhóm: tiêu đề + danh sách ô chức năng (biểu tượng, tên, mô tả, controller)
+    var nhomPhucVu = new (string Icon, string Ten, string MoTa, string Controller)[]
+    {
+        ("🧾", "Hóa đơn", "Gọi món, thanh toán, đóng hóa đơn", "QuanLyHoaDon"),
+        ("📅", "Đặt bàn", "Xác nhận và theo dõi lịch đặt", "QuanLyDatBan"),
+        ("🪑", "Bàn", "Sơ đồ và trạng thái bàn", "QuanLyBan")
+    };
+    var nhomKho = new (string Icon, string Ten, string MoTa, string Controller)[]
+    {
+        ("📦", "Tồn kho", "Xem lô, hạn dùng, kiểm kê", "TonKho"),
+        ("📥", "Nhập kho", "Lập phiếu nhập nguyên liệu", "NhapKho")
+    };
+    var nhomThucDon = new (string Icon, string Ten, string MoTa, string Controller)[]
+    {
+        ("⚙️", "Thực đơn", "Món ăn, giá, hình ảnh", "QuanLyThucDon"),
+        ("🗂️", "Danh mục món", "Khai vị, món chính, đồ uống...", "QuanLyDanhMuc"),
+        ("🍲", "Công thức món", "Nguyên liệu cho từng món", "QuanLyCongThuc")
+    };
+    var nhomKhoQuanLy = new (string Icon, string Ten, string MoTa, string Controller)[]
+    {
+        ("🏬", "Quản lý kho", "Danh sách kho", "QuanLyKho"),
+        ("🥬", "Nguyên liệu", "Danh mục nguyên liệu", "QuanLyNguyenLieu")
+    };
+    var nhomNhanSu = new (string Icon, string Ten, string MoTa, string Controller)[]
+    {
+        ("👥", "Nhân viên", "Tài khoản, lương, phân công", "QuanLyNhanVien"),
+        ("📋", "Công việc", "Danh mục công việc", "QuanLyCongViec"),
+        ("🧑‍🤝‍🧑", "Khách hàng", "Thông tin và tài khoản khách", "QuanLyKhachHang")
+    };
+    var nhomBaoCao = new (string Icon, string Ten, string MoTa, string Controller)[]
+    {
+        ("📊", "Thống kê", "Doanh thu, món bán chạy, chi nhập kho", "ThongKe")
+    };
+}
+
+<div class="page-header">
+    <h2>🏠 Trang quản trị</h2>
+    <p class="mb-0 text-muted">Xin chào, @User.Identity?.Name · @(laQuanLy ? "Quản lý" : "Nhân viên")</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-@(laQuanLy ? "3" : "3")">
+        <a asp-controller="QuanLyHoaDon" asp-action="Index" class="admin-stat">
+            <span class="admin-stat-number">@Model.SoHoaDonChuaThanhToan</span>
+            <span class="admin-stat-label">Hóa đơn chưa thanh toán</span>
+        </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <a asp-controller="QuanLyDatBan" asp-action="Index" class="admin-stat">
+            <span class="admin-stat-number">@Model.SoDatBanChoXacNhan</span>
+            <span class="admin-stat-label">Lịch đặt chờ xác nhận</span>
+        </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <a asp-controller="QuanLyBan" asp-action="Index" class="admin-stat">
+            <span class="admin-stat-number">@Model.SoBanDangDung<small>/@Model.SoBanDangHoatDong</small></span>
+            <span class="admin-stat-label">Bàn đang dùng</span>
+        </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        @if (laQuanLy)
+        {
+            <a asp-controller="ThongKe" asp-action="Index" class="admin-stat">
+                <span class="admin-stat-number">@String.Format("{0:N0}", Model.ThuHomNay ?? 0)<small> đ</small></span>
+                <span class="admin-stat-label">Đã thu hôm nay</span>
+            </a>
+        }
+        else
+        {
+            <a asp-controller="TonKho" asp-action="Index" asp-route-loc="saphethan" class="admin-stat">
+                <span class="admin-stat-number">@Model.SoLoCanhBao</span>
+                <span class="admin-stat-label">Lô kho cần chú ý</span>
+            </a>
+        }
+    </div>
+</div>
+
+@if (laQuanLy && Model.SoLoCanhBao > 0)
+{
+    <div class="alert alert-warning">
+        Kho có <strong>@Model.SoLoCanhBao lô</strong> sắp hết hạn hoặc đã hết hạn.
+        <a asp-controller="TonKho" asp-action="Index" asp-route-loc="saphethan">Xem ngay</a>
+    </div>
+}
+
+@functions {
+    // Vẽ một nhóm ô chức năng
+    Microsoft.AspNetCore.Html.IHtmlContent Nhom(string tieuDe, (string Icon, string Ten, string MoTa, string Controller)[] oChucNang)
+    {
+        var builder = new Microsoft.AspNetCore.Html.HtmlContentBuilder();
+        builder.AppendHtml("<h5 class=\"admin-group-title\">");
+        builder.Append(tieuDe);
+        builder.AppendHtml("</h5><div class=\"row g-3 mb-4\">");
+        foreach (var o in oChucNang)
+        {
+            builder.AppendHtml("<div class=\"col-12 col-sm-6 col-lg-4\"><a class=\"admin-tile\" href=\"");
+            builder.Append(Url.Action("Index", o.Controller) ?? "#");
+            builder.AppendHtml("\"><span class=\"admin-tile-icon\">");
+            builder.Append(o.Icon);
+            builder.AppendHtml("</span><span><span class=\"admin-tile-name\">");
+            builder.Append(o.Ten);
+            builder.AppendHtml("</span><span class=\"admin-tile-desc\">");
+            builder.Append(o.MoTa);
+            builder.AppendHtml("</span></span></a></div>");
+        }
+        builder.AppendHtml("</div>");
+        return builder;
+    }
+}
+
+@Nhom("Phục vụ khách", nhomPhucVu)
+@Nhom("Kho nguyên liệu", nhomKho)
+
+@if (laQuanLy)
+{
+    @Nhom("Thực đơn", nhomThucDon)
+    @Nhom("Quản lý kho", nhomKhoQuanLy)
+    @Nhom("Con người", nhomNhanSu)
+    @Nhom("Báo cáo", nhomBaoCao)
+}

@@ -1,0 +1,62 @@
+﻿@model IEnumerable<test.Models.MonAn>
+@{
+    ViewData["Title"] = "Quản lý thực đơn";
+    var danhMucList = (List<test.Models.DanhMuc>)ViewBag.DanhMucList;
+    var maDanhMucDangLoc = (int?)ViewBag.MaDanhMuc;
+}
+
+<div class="page-header">
+    <h2>⚙️ Quản lý thực đơn</h2>
+    <p class="mb-0 text-muted">@Model.Count() món ăn</p>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form method="get" asp-action="Index">
+        <select name="maDanhMuc" class="form-select" onchange="this.form.submit()">
+            <option value="">Tất cả danh mục</option>
+            @foreach (var dm in danhMucList)
+            {
+                <option value="@dm.MaDanhMuc" selected="@(maDanhMucDangLoc == dm.MaDanhMuc)">@dm.TenDanhMuc</option>
+            }
+        </select>
+    </form>
+    <a asp-action="Create" class="btn btn-restaurant">+ Thêm món mới</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th style="width:100px">Ảnh</th>
+                <th>Tên món</th>
+                <th>Danh mục</th>
+                <th class="text-end">Giá</th>
+                <th class="text-end" style="width:160px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.HinhAnh))
+                        {
+                            <img src="@item.HinhAnh" alt="@item.TenMon" style="width:80px;height:60px;object-fit:cover;border-radius:6px;" />
+                        }
+                        else
+                        {
+                            <span class="fs-3">🍽️</span>
+                        }
+                    </td>
+                    <td class="fw-semibold">@item.TenMon</td>
+                    <td><span class="badge-category">@(item.MaDanhMucNavigation?.TenDanhMuc ?? "Chưa phân loại")</span></td>
+                    <td class="text-end price-tag">@String.Format("{0:N0}", item.Gia) đ</td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@item.MaMon" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.MaMon" class="btn btn-sm btn-outline-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

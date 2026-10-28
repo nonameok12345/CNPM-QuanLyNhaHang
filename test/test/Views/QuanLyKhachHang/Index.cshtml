@@ -1,0 +1,82 @@
+@model List<test.Models.KhachHangDong>
+@{
+    ViewData["Title"] = "Khách hàng";
+    var tuKhoa = (string)ViewBag.TuKhoa;
+}
+
+<div class="page-header">
+    <h2>🧑‍🤝‍🧑 Khách hàng</h2>
+    <p class="mb-0 text-muted">@Model.Count khách (hiện tối đa 300)</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label mb-0" for="q">Tìm kiếm</label>
+        <input type="text" id="q" name="q" value="@tuKhoa" class="form-control" placeholder="Tên, SĐT, email" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tìm</button>
+        <a asp-action="Index" class="btn btn-link">Xóa lọc</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Họ tên</th>
+                <th>SĐT</th>
+                <th>Email</th>
+                <th>Địa chỉ</th>
+                <th>Tài khoản</th>
+                <th class="text-center">Lịch đặt bàn</th>
+                <th class="text-center">Hóa đơn</th>
+                <th class="text-end" style="width:160px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="8" class="text-center text-muted py-4">Không có khách hàng nào.</td></tr>
+            }
+            @foreach (var d in Model)
+            {
+                var k = d.KhachHang;
+                <tr>
+                    <td class="fw-semibold">@k.HoTen</td>
+                    <td>@k.SDT</td>
+                    <td>@(k.Email ?? "—")</td>
+                    <td>@(k.DiaChi ?? "—")</td>
+                    <td>
+                        @if (string.IsNullOrEmpty(k.MatKhau))
+                        {
+                            <span class="badge bg-secondary">Chưa đăng ký</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Có tài khoản</span>
+                        }
+                    </td>
+                    <td class="text-center">@d.SoLichDatBan</td>
+                    <td class="text-center">@d.SoHoaDon</td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@k.MaKH" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@k.MaKH" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa khách hàng @(k.HoTen)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

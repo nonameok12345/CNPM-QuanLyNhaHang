@@ -1,0 +1,59 @@
+@model test.Models.NguyenLieuFormViewModel
+@{
+    var laThem = Model.MaNL == 0;
+    ViewData["Title"] = laThem ? "Thêm nguyên liệu" : "Sửa nguyên liệu";
+}
+
+<div class="page-header">
+    <h2>🥬 @ViewData["Title"]</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 560px;">
+    <form asp-action="@(laThem ? "Create" : "Edit")" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="MaNL" />
+
+        <div class="mb-3">
+            <label asp-for="TenNL" class="form-label">Tên nguyên liệu</label>
+            <input asp-for="TenNL" class="form-control" placeholder="Ví dụ: Thịt bò" />
+            <span asp-validation-for="TenNL" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="DonViTinh" class="form-label">Đơn vị tính</label>
+                <input asp-for="DonViTinh" class="form-control" list="dsDonVi" />
+                <datalist id="dsDonVi">
+                    @foreach (var dv in test.Models.QuyDinhKho.DonViTinh)
+                    {
+                        <option value="@dv"></option>
+                    }
+                </datalist>
+                <span asp-validation-for="DonViTinh" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="GiaNhap" class="form-label">Giá nhập (đ / đơn vị)</label>
+                <input asp-for="GiaNhap" type="number" min="0" step="1" class="form-control" />
+                <span asp-validation-for="GiaNhap" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+            <select asp-for="TrangThai" class="form-select">
+                @foreach (var tt in test.Models.TrangThaiKho.TatCa)
+                {
+                    <option value="@tt" selected="@(Model.TrangThai == tt)">@tt</option>
+                }
+                @if (!test.Models.TrangThaiKho.TatCa.Contains(Model.TrangThai))
+                {
+                    <option value="@Model.TrangThai" selected>@Model.TrangThai</option>
+                }
+            </select>
+            <span asp-validation-for="TrangThai" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-restaurant">@(laThem ? "Thêm nguyên liệu" : "Lưu thay đổi")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </form>
+</div>

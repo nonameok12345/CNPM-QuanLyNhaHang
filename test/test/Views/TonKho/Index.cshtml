@@ -1,0 +1,135 @@
+@using System.Globalization
+@model List<test.Models.TonKho>
+@{
+    ViewData["Title"] = "Tồn kho";
+    var maKho = (int?)ViewBag.MaKho;
+    var tuKhoa = (string)ViewBag.TuKhoa;
+    var loc = (string)ViewBag.Loc;
+    var dsKho = (List<test.Models.Kho>)ViewBag.DanhSachKho;
+    var homNay = DateOnly.FromDateTime(DateTime.Today);
+    var hanCanhBao = homNay.AddDays(test.Models.QuyDinhKho.SapHetHanNgay);
+    var locList = new[]
+    {
+        ("con", "Còn hàng"),
+        ("saphethan", $"Sắp hết hạn (≤ {test.Models.QuyDinhKho.SapHetHanNgay} ngày)"),
+        ("hethan", "Đã hết hạn"),
+        ("hethang", "Hết hàng"),
+        ("tatca", "Tất cả")
+    };
+}
+
+<div class="page-header">
+    <h2>📦 Tồn kho</h2>
+    <p class="mb-0 text-muted">@Model.Count lô (hiện tối đa 300 lô)</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label mb-0" for="maKho">Kho</label>
+            <select id="maKho" name="maKho" class="form-select">
+                <option value="">Tất cả kho</option>
+                @foreach (var k in dsKho)
+                {
+                    <option value="@k.MaKho" selected="@(maKho == k.MaKho)">@k.TenKho</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0" for="q">Nguyên liệu</label>
+            <input type="text" id="q" name="q" value="@tuKhoa" class="form-control" placeholder="Tên nguyên liệu" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0" for="loc">Hiển thị</label>
+            <select id="loc" name="loc" class="form-select">
+                @foreach (var (giaTri, nhan) in locList)
+                {
+                    <option value="@giaTri" selected="@(loc == giaTri)">@nhan</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-secondary">Lọc</button>
+            <a asp-action="Index" class="btn btn-link">Xóa lọc</a>
+        </div>
+    </form>
+    <div>
+        <a asp-action="TongHop" asp-route-maKho="@maKho" class="btn btn-outline-secondary">Σ Tổng hợp</a>
+        <a asp-controller="NhapKho" asp-action="Tao" class="btn btn-restaurant">+ Nhập kho</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Nguyên liệu</th>
+                <th>Kho</th>
+                <th class="text-end">Số lượng tồn</th>
+                <th>Ngày nhập</th>
+                <th>Hạn dùng</th>
+                <th>Tình trạng</th>
+                <th style="width:230px">Điều chỉnh số lượng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">Không có lô nào phù hợp.</td></tr>
+            }
+            @foreach (var lo in Model)
+            {
+                var conHang = lo.SoLuongTon > 0;
+                var hetHan = conHang && lo.NgayHetHan != null && lo.NgayHetHan < homNay;
+                var sapHetHan = conHang && lo.NgayHetHan != null && lo.NgayHetHan >= homNay && lo.NgayHetHan <= hanCanhBao;
+                <tr class="@(hetHan ? "table-danger" : sapHetHan ? "table-warning" : "")">
+                    <td class="fw-semibold">@lo.NguyenLieu.TenNL</td>
+                    <td>@lo.Kho.TenKho</td>
+                    <td class="text-end">@lo.SoLuongTon.ToString("0.##") @lo.NguyenLieu.DonViTinh</td>
+                    <td>@lo.NgayNhap.ToString("dd/MM/yyyy")</td>
+                    <td>@(lo.NgayHetHan?.ToString("dd/MM/yyyy") ?? "—")</td>
+                    <td>
+                        @if (!conHang)
+                        {
+                            <span class="badge bg-secondary">Hết hàng</span>
+                        }
+                        else if (hetHan)
+                        {
+                            <span class="badge bg-danger">Đã hết hạn</span>
+                        }
+                        else if (sapHetHan)
+                        {
+                            <span class="badge bg-warning text-dark">Sắp hết hạn</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Còn hàng</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-action="DieuChinh" method="post" class="d-flex gap-1">
+                            <input type="hidden" name="id" value="@lo.MaTon" />
+                            <input type="hidden" name="maKho" value="@maKho" />
+                            <input type="hidden" name="q" value="@tuKhoa" />
+                            <input type="hidden" name="loc" value="@loc" />
+                            <input type="number" name="soLuongMoi" min="0" step="0.01"
+                                   value="@lo.SoLuongTon.ToString("0.##", CultureInfo.InvariantCulture)"
+                                   class="form-control form-control-sm" style="width:110px" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<p class="text-muted small">Dùng ô "Điều chỉnh số lượng" khi kiểm kê hoặc khi nguyên liệu bị hao hụt, hư hỏng.</p>

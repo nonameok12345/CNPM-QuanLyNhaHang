@@ -1,0 +1,89 @@
+﻿@model test.Models.MenuTaiQuanViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutTaiQuan.cshtml";
+    ViewData["Title"] = "Thực đơn";
+    ViewData["SoBan"] = Model.Ban.SoBan;
+    ViewData["Token"] = Model.Ban.MaQR;
+    ViewData["ThanhDuoi"] = true;
+    var token = Model.Ban.MaQR;
+}
+
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger py-2">@loi</div>
+}
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div id="thong-bao-gio" class="alert alert-success py-2">@thongBao</div>
+    <script>
+        setTimeout(function () {
+            var el = document.getElementById('thong-bao-gio');
+            if (el) el.remove();
+        }, 3000);
+    </script>
+}
+
+<form asp-action="Menu" asp-route-token="@token" method="get" class="d-flex gap-2 mb-3">
+    <input type="search" name="tuKhoa" value="@Model.TuKhoa" class="form-control" placeholder="Tìm món, ví dụ: Nem nướng..." />
+    @if (Model.MaDanhMuc != null)
+    {
+        <input type="hidden" name="maDanhMuc" value="@Model.MaDanhMuc" />
+    }
+    <button type="submit" class="btn btn-restaurant">Tìm</button>
+</form>
+
+<div class="d-flex gap-2 overflow-auto pb-2 mb-3">
+    <a asp-action="Menu" asp-route-token="@token"
+       class="btn btn-sm text-nowrap @(Model.MaDanhMuc == null ? "btn-restaurant" : "btn-outline-secondary")">Tất cả</a>
+    @foreach (var dm in Model.DanhMucs)
+    {
+        <a asp-action="Menu" asp-route-token="@token" asp-route-maDanhMuc="@dm.MaDanhMuc"
+           class="btn btn-sm text-nowrap @(Model.MaDanhMuc == dm.MaDanhMuc ? "btn-restaurant" : "btn-outline-secondary")">@dm.TenDanhMuc</a>
+    }
+</div>
+
+@if (!Model.MonAns.Any())
+{
+    <div class="alert alert-warning text-center">Không tìm thấy món phù hợp.</div>
+}
+
+@foreach (var item in Model.MonAns)
+{
+    <div class="card card-food mb-3" id="mon-@item.MaMon">
+        <div class="d-flex">
+            @if (!string.IsNullOrEmpty(item.HinhAnh))
+            {
+                <img src="@item.HinhAnh" alt="@item.TenMon" style="width:110px;height:110px;object-fit:cover;flex-shrink:0;" />
+            }
+            else
+            {
+                <div class="food-icon" style="width:110px;height:110px;font-size:2rem;border-radius:0;flex-shrink:0;">🍽️</div>
+            }
+            <div class="p-2 flex-grow-1 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="fw-semibold">@item.TenMon</div>
+                    <span class="badge-category">@(item.MaDanhMucNavigation?.TenDanhMuc ?? "Chưa phân loại")</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="price-tag">@String.Format("{0:N0}", item.Gia) đ</span>
+                    <form asp-action="Them" asp-route-token="@token" method="post">
+                        <input type="hidden" name="maMon" value="@item.MaMon" />
+                        <input type="hidden" name="tuKhoa" value="@Model.TuKhoa" />
+                        @if (Model.MaDanhMuc != null)
+                        {
+                            <input type="hidden" name="maDanhMuc" value="@Model.MaDanhMuc" />
+                        }
+                        <button type="submit" class="btn btn-restaurant btn-sm">+ Thêm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="tq-bottom">
+    <a asp-action="Gio" asp-route-token="@token" class="btn btn-restaurant w-100 d-flex justify-content-between">
+        <span>🛒 Giỏ món (@Model.SoMonTrongGio)</span>
+        <span>@String.Format("{0:N0}", Model.TongGio) đ</span>
+    </a>
+</div>

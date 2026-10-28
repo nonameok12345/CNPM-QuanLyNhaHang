@@ -1,0 +1,42 @@
+﻿@model test.Models.DaGoiViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutTaiQuan.cshtml";
+    ViewData["Title"] = "Món đã gọi";
+    ViewData["SoBan"] = Model.Ban.SoBan;
+    ViewData["Token"] = Model.Ban.MaQR;
+    var token = Model.Ban.MaQR;
+}
+
+<h2 class="h4 mb-3" style="color:var(--brand-red);font-family:Georgia,serif;">🧾 Món đã gọi của bàn @Model.Ban.SoBan</h2>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success py-2">@thongBao</div>
+}
+
+@if (!Model.HoaDon.ChiTietHoaDons.Any())
+{
+    <div class="text-center py-4">
+        <p class="fs-5">Bàn chưa gọi món nào.</p>
+        <a asp-action="Menu" asp-route-token="@token" class="btn btn-restaurant">Chọn món</a>
+    </div>
+}
+else
+{
+    <ul class="list-group mb-3">
+        @foreach (var c in Model.HoaDon.ChiTietHoaDons.OrderBy(c => c.MonAn.TenMon))
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <span>@c.SoLuong × @c.MonAn.TenMon</span>
+                <span>@String.Format("{0:N0}", c.SoLuong * c.DonGia) đ</span>
+            </li>
+        }
+        <li class="list-group-item d-flex justify-content-between fw-bold">
+            <span>Tổng cộng</span>
+            <span class="price-tag">@String.Format("{0:N0}", Model.HoaDon.TongTien) đ</span>
+        </li>
+    </ul>
+
+    <p class="text-muted small">Dùng xong, vui lòng gọi nhân viên để thanh toán.</p>
+    <a asp-action="Menu" asp-route-token="@token" class="btn btn-restaurant w-100">+ Gọi thêm món</a>
+}

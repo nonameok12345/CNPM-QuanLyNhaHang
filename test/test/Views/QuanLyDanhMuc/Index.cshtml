@@ -1,0 +1,62 @@
+@model List<test.Models.DanhMucDong>
+@{
+    ViewData["Title"] = "Danh mục món";
+}
+
+<div class="page-header">
+    <h2>🗂️ Danh mục món</h2>
+    <p class="mb-0 text-muted">@Model.Count danh mục</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a asp-controller="QuanLyThucDon" asp-action="Index" class="btn btn-outline-secondary">⚙️ Quản lý thực đơn</a>
+    <a asp-action="Create" class="btn btn-restaurant">+ Thêm danh mục</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th style="width:70px">Mã</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Số món</th>
+                <th class="text-end" style="width:160px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Chưa có danh mục nào.</td></tr>
+            }
+            @foreach (var d in Model)
+            {
+                <tr class="@(d.DanhMuc.TrangThai != test.Models.TrangThaiKho.HoatDong ? "table-secondary" : "")">
+                    <td>@d.DanhMuc.MaDanhMuc</td>
+                    <td class="fw-semibold">@d.DanhMuc.TenDanhMuc</td>
+                    <td>@(d.DanhMuc.MoTa ?? "—")</td>
+                    <td>@d.DanhMuc.TrangThai</td>
+                    <td class="text-center">@d.SoMon</td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@d.DanhMuc.MaDanhMuc" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@d.DanhMuc.MaDanhMuc" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa danh mục @(d.DanhMuc.TenDanhMuc)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<p class="text-muted small">Danh mục "Ngừng hoạt động" sẽ ẩn cùng các món của nó khỏi trang thực đơn của khách.</p>

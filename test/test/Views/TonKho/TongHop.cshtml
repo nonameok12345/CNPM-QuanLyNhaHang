@@ -1,0 +1,55 @@
+@model List<test.Models.TonKhoTongHopDong>
+@{
+    ViewData["Title"] = "Tổng hợp tồn kho";
+    var maKho = (int?)ViewBag.MaKho;
+    var dsKho = (List<test.Models.Kho>)ViewBag.DanhSachKho;
+}
+
+<div class="page-header">
+    <h2>Σ Tổng hợp tồn kho</h2>
+    <p class="mb-0 text-muted">@Model.Count nguyên liệu còn hàng</p>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <form method="get" asp-action="TongHop" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label mb-0" for="maKho">Kho</label>
+            <select id="maKho" name="maKho" class="form-select" onchange="this.form.submit()">
+                <option value="">Tất cả kho</option>
+                @foreach (var k in dsKho)
+                {
+                    <option value="@k.MaKho" selected="@(maKho == k.MaKho)">@k.TenKho</option>
+                }
+            </select>
+        </div>
+    </form>
+    <a asp-action="Index" asp-route-maKho="@maKho" class="btn btn-outline-secondary">← Xem từng lô</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Nguyên liệu</th>
+                <th class="text-end">Tổng tồn</th>
+                <th class="text-center">Số lô</th>
+                <th>Hạn dùng gần nhất</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="4" class="text-center text-muted py-4">Chưa có nguyên liệu nào trong kho.</td></tr>
+            }
+            @foreach (var dong in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@dong.NguyenLieu.TenNL</td>
+                    <td class="text-end">@dong.TongTon.ToString("0.##") @dong.NguyenLieu.DonViTinh</td>
+                    <td class="text-center">@dong.SoLo</td>
+                    <td>@(dong.HanGanNhat?.ToString("dd/MM/yyyy") ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

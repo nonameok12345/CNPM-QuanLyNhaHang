@@ -1,0 +1,20 @@
+﻿@model test.Models.MonAn
+@{
+    ViewData["Title"] = "Xóa món ăn";
+}
+
+<div class="page-header">
+    <h2>🗑️ Xác nhận xóa món</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 500px;">
+    <h5>@Model.TenMon</h5>
+    <p class="mb-1">Danh mục: @(Model.MaDanhMucNavigation?.TenDanhMuc ?? "Chưa phân loại")</p>
+    <p class="price-tag">@String.Format("{0:N0}", Model.Gia) đ</p>
+    <p class="text-danger">Món ăn sẽ bị xóa khỏi thực đơn và không thể khôi phục.</p>
+
+    <form asp-action="Delete" asp-route-id="@Model.MaMon" method="post">
+        <button type="submit" class="btn btn-danger">Xóa món này</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    </form>
+</div>

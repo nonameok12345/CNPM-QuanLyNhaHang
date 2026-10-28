@@ -1,0 +1,70 @@
+@model List<test.Models.KhoDong>
+@{
+    ViewData["Title"] = "Quản lý kho";
+}
+
+<div class="page-header">
+    <h2>🏬 Quản lý kho</h2>
+    <p class="mb-0 text-muted">@Model.Count kho</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <a asp-controller="QuanLyNguyenLieu" asp-action="Index" class="btn btn-outline-secondary">🥬 Nguyên liệu</a>
+        <a asp-controller="TonKho" asp-action="Index" class="btn btn-outline-secondary">📦 Tồn kho</a>
+        <a asp-controller="NhapKho" asp-action="Index" class="btn btn-outline-secondary">📥 Phiếu nhập</a>
+    </div>
+    <a asp-action="Create" class="btn btn-restaurant">+ Thêm kho</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Tên kho</th>
+                <th>Địa chỉ</th>
+                <th>SĐT</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Lô còn hàng</th>
+                <th class="text-center">Nhân viên phụ trách</th>
+                <th class="text-end" style="width:200px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">Chưa có kho nào.</td></tr>
+            }
+            @foreach (var dong in Model)
+            {
+                var kho = dong.Kho;
+                <tr class="@(kho.TrangThai == test.Models.TrangThaiKho.Ngung ? "table-secondary" : "")">
+                    <td class="fw-semibold">@kho.TenKho</td>
+                    <td>@(kho.DiaChi ?? "—")</td>
+                    <td>@(kho.SDT ?? "—")</td>
+                    <td>@kho.TrangThai</td>
+                    <td class="text-center">
+                        <a asp-controller="TonKho" asp-action="Index" asp-route-maKho="@kho.MaKho">@dong.SoLoCon</a>
+                    </td>
+                    <td class="text-center">@dong.SoNhanVien</td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@kho.MaKho" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@kho.MaKho" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa kho @(kho.TenKho)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

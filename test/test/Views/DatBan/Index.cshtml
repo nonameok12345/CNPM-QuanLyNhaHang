@@ -1,0 +1,85 @@
+﻿@model test.Models.TimBanViewModel
+@{
+    ViewData["Title"] = "Đặt bàn";
+    var ngayChon = (Model.Ngay ?? DateTime.Today).ToString("yyyy-MM-dd");
+    var ngayHienThi = (Model.Ngay ?? DateTime.Today).ToString("dd/MM/yyyy");
+    var ngayMin = DateTime.Today.ToString("yyyy-MM-dd");
+    var ngayMax = DateTime.Today.AddDays(test.Models.QuyDinhDatBan.DatTruocToiDaNgay).ToString("yyyy-MM-dd");
+}
+
+<div class="page-header text-center">
+    <h1>📅 Đặt bàn</h1>
+    <p class="mb-0">Chọn ngày giờ và số người, sau đó chọn bàn. Đặt bàn xong bạn sẽ chọn món.</p>
+</div>
+
+@if (TempData["Loi"] is string loiTemp)
+{
+    <div class="alert alert-danger">@loiTemp</div>
+}
+
+<form method="get" asp-action="Index" class="card card-food p-4 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Ngày</label>
+            <input type="date" name="ngay" value="@ngayChon" min="@ngayMin" max="@ngayMax" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Giờ</label>
+            <select name="gio" class="form-control">
+                @foreach (var g in test.Models.QuyDinhDatBan.DanhSachGio())
+                {
+                    <option value="@g" selected="@(g == Model.Gio)">@g</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Số người</label>
+            <input type="number" name="soNguoi" value="@(Model.SoNguoi ?? 2)" min="1" max="@test.Models.QuyDinhDatBan.SoNguoiToiDa" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-restaurant w-100">Tìm bàn trống</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.Loi != null)
+{
+    <div class="alert alert-warning">@Model.Loi</div>
+}
+else if (Model.BanTrong != null)
+{
+    if (!Model.BanTrong.Any())
+    {
+        <div class="alert alert-info">
+            Rất tiếc, không còn bàn trống cho @Model.SoNguoi người lúc @Model.Gio ngày @ngayHienThi.
+            Bạn thử đổi giờ hoặc ngày khác nhé.
+        </div>
+    }
+    else
+    {
+        <h4 class="section-title mb-3">Bàn còn trống lúc @Model.Gio ngày @ngayHienThi</h4>
+        <div class="row g-3">
+            @foreach (var b in Model.BanTrong)
+            {
+                <div class="col-md-3 col-sm-6">
+                    <div class="card card-food p-3 text-center h-100">
+                        <div class="fs-1">🪑</div>
+                        <h5>Bàn @b.SoBan</h5>
+                        <p class="text-muted mb-3">@b.SoChoNgoi chỗ ngồi</p>
+                        <form asp-action="Tao" method="post" class="mt-auto">
+                            <input type="hidden" name="ngay" value="@ngayChon" />
+                            <input type="hidden" name="gio" value="@Model.Gio" />
+                            <input type="hidden" name="soNguoi" value="@Model.SoNguoi" />
+                            <input type="hidden" name="maBan" value="@b.MaBan" />
+                            <button type="submit" class="btn btn-restaurant w-100">Chọn bàn này</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+<p class="mt-4">
+    <a asp-action="CuaToi">Xem lịch đặt bàn của tôi →</a>
+</p>

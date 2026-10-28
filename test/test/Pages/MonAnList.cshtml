@@ -1,0 +1,11 @@
+﻿@page
+@model MonAnListModel
+
+<h2>Danh sách món ăn</h2>
+<table border="1">
+    <tr><th>Mã</th><th>Tên món</th><th>Giá</th></tr>
+    @foreach (var mon in Model.DanhSachMon)
+    {
+        <tr><td>@mon.MaMon</td><td>@mon.TenMon</td><td>@mon.Gia</td></tr>
+    }
+</table>

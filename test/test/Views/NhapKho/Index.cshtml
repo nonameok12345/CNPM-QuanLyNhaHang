@@ -1,0 +1,77 @@
+@model List<test.Models.PhieuNhap>
+@{
+    ViewData["Title"] = "Phiếu nhập kho";
+    var tu = (string)ViewBag.Tu;
+    var den = (string)ViewBag.Den;
+}
+
+<div class="page-header">
+    <h2>📥 Phiếu nhập kho</h2>
+    <p class="mb-0 text-muted">@Model.Count phiếu (hiện tối đa 100 phiếu mới nhất)</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label mb-0" for="tu">Từ ngày</label>
+            <input type="date" id="tu" name="tu" value="@tu" class="form-control" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0" for="den">Đến ngày</label>
+            <input type="date" id="den" name="den" value="@den" class="form-control" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-secondary">Lọc</button>
+            <a asp-action="Index" class="btn btn-link">Xóa lọc</a>
+        </div>
+    </form>
+    <div>
+        <a asp-controller="TonKho" asp-action="Index" class="btn btn-outline-secondary">📦 Tồn kho</a>
+        <a asp-action="Tao" class="btn btn-restaurant">+ Lập phiếu nhập</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Mã phiếu</th>
+                <th>Ngày nhập</th>
+                <th>Nhân viên lập</th>
+                <th class="text-center">Số mặt hàng</th>
+                <th class="text-end">Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th class="text-end"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">Chưa có phiếu nhập nào.</td></tr>
+            }
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">#@p.MaNhap</td>
+                    <td>@p.NgayNhap.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@p.NhanVien.HoTen</td>
+                    <td class="text-center">@p.ChiTiets.Count</td>
+                    <td class="text-end">@String.Format("{0:N0} đ", p.TongTien)</td>
+                    <td>@p.TrangThai</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@p.MaNhap" class="btn btn-sm btn-outline-primary">Xem</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

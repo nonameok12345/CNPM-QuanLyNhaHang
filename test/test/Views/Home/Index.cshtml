@@ -1,0 +1,43 @@
+﻿@model List<test.Models.DanhMuc>
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<section class="hero text-center">
+    <h1>🍜 Nhà Hàng Siêu Việt</h1>
+    <p class="lead mb-4">Hương vị Việt trong từng món ăn</p>
+    <a asp-controller="MonAn" asp-action="Index" class="btn btn-restaurant">Xem toàn bộ thực đơn</a>
+</section>
+
+@foreach (var dm in Model.Where(d => d.MonAns.Any()))
+{
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <h2 class="section-title mb-0">@dm.TenDanhMuc</h2>
+            <a class="link-more" asp-controller="MonAn" asp-action="Index" asp-route-maDanhMuc="@dm.MaDanhMuc">Xem tất cả (@dm.MonAns.Count())</a>
+        </div>
+
+        <div class="row g-4">
+            @* Trang chủ chỉ hiện 4 món đầu của mỗi danh mục cho gọn *@
+            @foreach (var item in dm.MonAns.Take(4))
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card card-food h-100">
+                        @if (!string.IsNullOrEmpty(item.HinhAnh))
+                        {
+                            <img src="@item.HinhAnh" alt="@item.TenMon" class="food-image" />
+                        }
+                        else
+                        {
+                            <div class="food-icon">🍽️</div>
+                        }
+                        <div class="card-body">
+                            <h5 class="mb-1">@item.TenMon</h5>
+                            <p class="price-tag mb-0">@String.Format("{0:N0}", item.Gia) đ</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}

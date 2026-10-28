@@ -1,0 +1,141 @@
+@model test.Models.ThongKeViewModel
+@{
+    ViewData["Title"] = "Thống kê";
+    var maxNgay = Model.TheoNgay.Count == 0 ? 1 : Model.TheoNgay.Max(n => n.SoTien);
+    if (maxNgay <= 0) { maxNgay = 1; }
+    var maxMon = Model.TopMon.Count == 0 ? 1 : Model.TopMon.Max(m => m.SoLuong);
+    if (maxMon <= 0) { maxMon = 1; }
+}
+
+<div class="page-header">
+    <h2>📊 Thống kê</h2>
+    <p class="mb-0 text-muted">@Model.Tu.ToString("dd/MM/yyyy") – @Model.Den.ToString("dd/MM/yyyy")</p>
+</div>
+
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-warning">@loi</div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-4">
+    <div class="col-auto">
+        <label class="form-label mb-0" for="tu">Từ ngày</label>
+        <input type="date" id="tu" name="tu" value="@Model.Tu.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0" for="den">Đến ngày</label>
+        <input type="date" id="den" name="den" value="@Model.Den.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-restaurant">Xem</button>
+        <a asp-action="Index" class="btn btn-link">Tháng này</a>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card card-food p-3 h-100">
+            <div class="text-muted small">Đã thu</div>
+            <div class="fs-4 fw-bold">@String.Format("{0:N0} đ", Model.TongThu)</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card card-food p-3 h-100">
+            <div class="text-muted small">Hóa đơn đã thanh toán</div>
+            <div class="fs-4 fw-bold">@Model.SoHoaDonDaThanhToan</div>
+            <div class="small text-muted">Trung bình @String.Format("{0:N0} đ", Model.TrungBinhHoaDon) / hóa đơn</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card card-food p-3 h-100">
+            <div class="text-muted small">Chi nhập kho</div>
+            <div class="fs-4 fw-bold">@String.Format("{0:N0} đ", Model.ChiNhapKho)</div>
+            <div class="small text-muted">Thu – chi: <span class="@(Model.ChenhLech < 0 ? "text-danger" : "")">@String.Format("{0:N0} đ", Model.ChenhLech)</span></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card card-food p-3 h-100">
+            <div class="text-muted small">Hóa đơn chưa thanh toán</div>
+            <div class="fs-4 fw-bold">@Model.SoHoaDonDangMo</div>
+            <a asp-controller="QuanLyHoaDon" asp-action="Index" class="small">Xem hóa đơn</a>
+        </div>
+    </div>
+</div>
+
+@if (Model.SoLoDaHetHan > 0 || Model.SoLoSapHetHan > 0)
+{
+    <div class="alert alert-warning">
+        Kho hôm nay có
+        @if (Model.SoLoDaHetHan > 0)
+        {
+            <a asp-controller="TonKho" asp-action="Index" asp-route-loc="hethan"><strong>@Model.SoLoDaHetHan lô đã hết hạn</strong></a>
+        }
+        @if (Model.SoLoDaHetHan > 0 && Model.SoLoSapHetHan > 0) { <span> và </span> }
+        @if (Model.SoLoSapHetHan > 0)
+        {
+            <a asp-controller="TonKho" asp-action="Index" asp-route-loc="saphethan"><strong>@Model.SoLoSapHetHan lô sắp hết hạn</strong></a>
+        }
+        .
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <h5>Tiền thu theo ngày</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle bg-white">
+                <thead><tr><th style="width:110px">Ngày</th><th>Số tiền</th><th class="text-end" style="width:70px">Lần thu</th></tr></thead>
+                <tbody>
+                    @if (Model.TheoNgay.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-center text-muted py-3">Chưa có khoản thu nào trong khoảng này.</td></tr>
+                    }
+                    @foreach (var n in Model.TheoNgay)
+                    {
+                        <tr>
+                            <td>@n.Ngay.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-warning rounded" style="height:10px;width:@((int)(n.SoTien * 100 / maxNgay))%;min-width:2px"></div>
+                                    <span>@String.Format("{0:N0} đ", n.SoTien)</span>
+                                </div>
+                            </td>
+                            <td class="text-end">@n.SoLanThu</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <h5>Top 10 món bán chạy</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle bg-white">
+                <thead><tr><th>Món</th><th>Số phần</th><th class="text-end">Doanh thu</th></tr></thead>
+                <tbody>
+                    @if (Model.TopMon.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-center text-muted py-3">Chưa có món nào được bán trong khoảng này.</td></tr>
+                    }
+                    @foreach (var m in Model.TopMon)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@m.TenMon</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-success rounded" style="height:10px;width:@(m.SoLuong * 100 / maxMon)%;min-width:2px"></div>
+                                    <span>@m.SoLuong</span>
+                                </div>
+                            </td>
+                            <td class="text-end">@String.Format("{0:N0} đ", m.DoanhThu)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<p class="text-muted small mt-3">
+    "Đã thu" tính theo ngày thu tiền (kể cả hóa đơn trả nhiều lần). Số hóa đơn và món bán chạy tính trên hóa đơn lập trong khoảng ngày đã chọn và đã thanh toán đủ.
+</p>

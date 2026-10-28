@@ -1,0 +1,53 @@
+@model test.Models.KhoFormViewModel
+@{
+    var laThem = Model.MaKho == 0;
+    ViewData["Title"] = laThem ? "Thêm kho" : "Sửa kho";
+}
+
+<div class="page-header">
+    <h2>🏬 @ViewData["Title"]</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 560px;">
+    <form asp-action="@(laThem ? "Create" : "Edit")" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="MaKho" />
+
+        <div class="mb-3">
+            <label asp-for="TenKho" class="form-label">Tên kho</label>
+            <input asp-for="TenKho" class="form-control" placeholder="Ví dụ: Kho lạnh" />
+            <span asp-validation-for="TenKho" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+            <input asp-for="DiaChi" class="form-control" />
+            <span asp-validation-for="DiaChi" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SDT" class="form-label">Số điện thoại</label>
+            <input asp-for="SDT" class="form-control" />
+            <span asp-validation-for="SDT" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+            <select asp-for="TrangThai" class="form-select">
+                @foreach (var tt in test.Models.TrangThaiKho.TatCa)
+                {
+                    <option value="@tt" selected="@(Model.TrangThai == tt)">@tt</option>
+                }
+                @if (!test.Models.TrangThaiKho.TatCa.Contains(Model.TrangThai))
+                {
+                    <option value="@Model.TrangThai" selected>@Model.TrangThai</option>
+                }
+            </select>
+            <span asp-validation-for="TrangThai" class="text-danger"></span>
+            <div class="form-text">Kho "Ngừng hoạt động" sẽ không xuất hiện khi lập phiếu nhập.</div>
+        </div>
+
+        <button type="submit" class="btn btn-restaurant">@(laThem ? "Thêm kho" : "Lưu thay đổi")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </form>
+</div>

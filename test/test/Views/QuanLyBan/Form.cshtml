@@ -1,0 +1,42 @@
+﻿@model test.Models.BanFormViewModel
+@{
+    var laThem = Model.MaBan == 0;
+    ViewData["Title"] = laThem ? "Thêm bàn" : "Sửa bàn";
+}
+
+<div class="page-header">
+    <h2>🪑 @ViewData["Title"]</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 500px;">
+    <form asp-action="@(laThem ? "Create" : "Edit")" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="MaBan" />
+
+        <div class="mb-3">
+            <label asp-for="SoBan" class="form-label">Số bàn</label>
+            <input asp-for="SoBan" class="form-control" placeholder="Ví dụ: B05" />
+            <span asp-validation-for="SoBan" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SoChoNgoi" class="form-label">Số chỗ ngồi</label>
+            <input asp-for="SoChoNgoi" type="number" min="1" max="50" class="form-control" />
+            <span asp-validation-for="SoChoNgoi" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+            <select asp-for="TrangThai" class="form-select">
+                @foreach (var tt in test.Models.TrangThaiBan.TatCa)
+                {
+                    <option value="@tt">@tt</option>
+                }
+            </select>
+            <span asp-validation-for="TrangThai" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-restaurant">@(laThem ? "Thêm bàn" : "Lưu thay đổi")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </form>
+</div>

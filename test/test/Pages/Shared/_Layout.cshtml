@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Nhà Hàng Siêu Việt</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/test.styles.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+    @{
+        var soMonTrongGio = test.Models.GioHangSession.TongSoLuong(Context.Session);
+    }
+    <header>
+        @* navbar-expand-xl: màn hình dưới 1200px sẽ thu gọn thành nút ☰ thay vì bị tràn ngang *@
+        <nav class="navbar navbar-expand-xl navbar-restaurant sticky-top">
+            <div class="container-xxl">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    🍜 Nhà Hàng Siêu Việt
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#menuChinh" aria-controls="menuChinh"
+                        aria-expanded="false" aria-label="Mở menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="menuChinh">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Thực đơn
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-restaurant">
+                                @await Component.InvokeAsync("DanhMucMenu")
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">Giới thiệu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">Liên hệ</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Đặt bàn
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-restaurant">
+                                <li><a class="dropdown-item" asp-controller="DatBan" asp-action="Index">📅 Đặt bàn trước (từ xa)</a></li>
+                                <li><a class="dropdown-item" asp-controller="GoiMonTaiQuan" asp-action="Index">📱 Gọi món tại quán (quét QR)</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <div class="nav-actions">
+                        <a class="btn btn-order" asp-controller="MonAn" asp-action="Index">Đặt món</a>
+
+                        <a class="btn btn-nav" asp-controller="GioHang" asp-action="Index" title="Giỏ hàng">
+                            🛒<span class="d-xl-none d-inline"> Giỏ hàng</span>
+                            @if (soMonTrongGio > 0)
+                            {
+                                <span class="badge rounded-pill bg-warning text-dark">@soMonTrongGio</span>
+                            }
+                        </a>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-nav dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false" title="@User.Identity.Name">
+                                    👤 <span class="user-name">@User.Identity.Name</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-restaurant">
+                                    @if (User.IsInRole("QuanLy") || User.IsInRole("NhanVien"))
+                                    {
+                                        <li><a class="dropdown-item" asp-controller="QuanLyHoaDon" asp-action="Index">🧾 Quản lý hóa đơn</a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLyDatBan" asp-action="Index">📅 Quản lý đặt bàn</a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLyBan" asp-action="Index">🪑 Quản lý bàn</a></li>
+                                        <li><a class="dropdown-item" asp-controller="QuanLyBan" asp-action="QR">📱 QR gọi món tại bàn</a></li>
+                                        <li><a class="dropdown-item" asp-controller="TonKho" asp-action="Index">📦 Tồn kho</a></li>
+                                        <li><a class="dropdown-item" asp-controller="NhapKho" asp-action="Index">📥 Nhập kho</a></li>
+                                        @if (User.IsInRole("QuanLy"))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="QuanLyThucDon" asp-action="Index">⚙️ Quản lý thực đơn</a></li>
+                                            <li><a class="dropdown-item" asp-controller="QuanLyNhanVien" asp-action="Index">👥 Quản lý nhân viên</a></li>
+                                            <li><a class="dropdown-item" asp-controller="QuanLyKho" asp-action="Index">🏬 Quản lý kho</a></li>
+                                            <li><a class="dropdown-item" asp-controller="QuanLyNguyenLieu" asp-action="Index">🥬 Nguyên liệu</a></li>
+                                            <li><a class="dropdown-item" asp-controller="QuanLyCongThuc" asp-action="Index">🍲 Công thức món</a></li>
+                                        }
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-nav" asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập</a>
+                            <a class="btn btn-nav" asp-controller="TaiKhoan" asp-action="DangKy">Đăng ký</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>© @DateTime.Now.Year Nhà Hàng Siêu Việt · Hương vị Việt trong từng món ăn</span>
+            <a asp-area="" asp-page="/Privacy">Chính sách bảo mật</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

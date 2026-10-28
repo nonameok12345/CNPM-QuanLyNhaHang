@@ -1,0 +1,19 @@
+﻿@model test.Models.DatBan
+@{
+    ViewData["Title"] = "Đặt bàn thành công";
+}
+
+<div class="page-header text-center">
+    <h1>✅ Đặt bàn thành công</h1>
+</div>
+
+<div class="card card-food p-4 mx-auto text-center" style="max-width: 460px;">
+    <p class="fs-5 mb-1">Bàn <strong>@Model.Ban.SoBan</strong> · @Model.SoNguoi người</p>
+    <p class="price-tag mb-3">@Model.NgayGio.ToString("HH:mm") ngày @Model.NgayGio.ToString("dd/MM/yyyy")</p>
+    <p class="text-muted">Nhà hàng sẽ giữ bàn cho bạn @test.Models.QuyDinhDatBan.ThoiLuongGio tiếng kể từ giờ đặt.</p>
+
+    <h5 class="mt-3">Bước tiếp theo: chọn món</h5>
+    <p class="text-muted">Chọn món trước để nhà hàng chuẩn bị, bạn sẽ gửi món cho lịch đặt bàn này ở trang giỏ hàng.</p>
+    <a asp-controller="MonAn" asp-action="Index" class="btn btn-restaurant mb-2">Chọn món ngay</a>
+    <a asp-action="CuaToi" class="btn btn-outline-secondary">Lịch đặt bàn của tôi</a>
+</div>

@@ -1,0 +1,115 @@
+@model test.Models.CongThucFormViewModel
+@{
+    ViewData["Title"] = "Công thức: " + Model.TenMon;
+    var duLieuDong = System.Text.Json.JsonSerializer.Serialize(Model.Dong);
+}
+
+<div class="page-header">
+    <h2>🍲 Công thức: @Model.TenMon</h2>
+    <p class="mb-0 text-muted">Nguyên liệu dùng cho <strong>1 phần</strong> món này</p>
+</div>
+
+@if (Model.DanhSachNguyenLieu.Count == 0)
+{
+    <div class="alert alert-warning">
+        Chưa có nguyên liệu nào. <a asp-controller="QuanLyNguyenLieu" asp-action="Create">Thêm nguyên liệu</a> trước.
+    </div>
+}
+
+<form asp-action="Edit" method="post">
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <input type="hidden" asp-for="MaMon" />
+
+    <div class="table-responsive" style="max-width:760px">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Nguyên liệu</th>
+                    <th style="width:200px">Số lượng / 1 phần</th>
+                    <th style="width:60px">Đơn vị</th>
+                    <th style="width:50px"></th>
+                </tr>
+            </thead>
+            <tbody id="dongCT"></tbody>
+        </table>
+    </div>
+
+    <button type="button" class="btn btn-outline-secondary mb-3" id="themDong">+ Thêm nguyên liệu</button>
+    <div>
+        <button type="submit" class="btn btn-restaurant">Lưu công thức</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+    <p class="text-muted small mt-3">
+        Ví dụ: 0,15 kg thịt bò cho một phần bò lúc lắc. Có thể nhập tối đa 3 chữ số thập phân.
+        Để trống toàn bộ rồi lưu nếu muốn xóa công thức.
+    </p>
+</form>
+
+<template id="mauDong">
+    <tr>
+        <td>
+            <select data-f="MaNL" class="form-select">
+                <option value="">— Chọn nguyên liệu —</option>
+                @foreach (var nl in Model.DanhSachNguyenLieu)
+                {
+                    <option value="@nl.MaNL" data-dvt="@nl.DonViTinh">@(nl.TenNL + (nl.TrangThai != test.Models.TrangThaiKho.HoatDong ? " (ngừng sử dụng)" : ""))</option>
+                }
+            </select>
+        </td>
+        <td><input data-f="SoLuong" type="number" min="0" step="0.001" class="form-control" /></td>
+        <td class="dvt text-muted"></td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger xoa-dong" title="Xóa dòng">✕</button></td>
+    </tr>
+</template>
+
+@section Scripts {
+    <script>
+        (function () {
+            const body = document.getElementById('dongCT');
+            const mau = document.getElementById('mauDong');
+            const du = @Html.Raw(duLieuDong);
+
+            function giaTri(tr, ten) { return tr.querySelector('[data-f="' + ten + '"]'); }
+
+            function capNhatDonVi(tr) {
+                const opt = giaTri(tr, 'MaNL').selectedOptions[0];
+                tr.querySelector('.dvt').textContent = opt && opt.dataset.dvt ? opt.dataset.dvt : '';
+            }
+
+            // Đặt lại tên ô theo thứ tự dòng (Dong[0].MaNL, Dong[1].MaNL...) để máy chủ đọc liền mạch
+            function danhSo() {
+                [...body.children].forEach(function (tr, i) {
+                    tr.querySelectorAll('[data-f]').forEach(function (el) {
+                        el.name = 'Dong[' + i + '].' + el.dataset.f;
+                    });
+                });
+            }
+
+            function themDong(d) {
+                const tr = mau.content.firstElementChild.cloneNode(true);
+                if (d) {
+                    giaTri(tr, 'MaNL').value = d.MaNL != null ? d.MaNL : '';
+                    giaTri(tr, 'SoLuong').value = d.SoLuong != null ? d.SoLuong : '';
+                }
+                body.appendChild(tr);
+                capNhatDonVi(tr);
+                danhSo();
+            }
+
+            body.addEventListener('click', function (e) {
+                const nut = e.target.closest('.xoa-dong');
+                if (!nut) return;
+                // Xóa hẳn dòng; nếu là dòng cuối thì chỉ làm trống để vẫn còn chỗ nhập
+                if (body.children.length > 1) nut.closest('tr').remove();
+                else { const tr = nut.closest('tr'); giaTri(tr, 'MaNL').value = ''; giaTri(tr, 'SoLuong').value = ''; capNhatDonVi(tr); }
+                danhSo();
+            });
+            body.addEventListener('change', function (e) {
+                if (e.target.matches('[data-f="MaNL"]')) capNhatDonVi(e.target.closest('tr'));
+            });
+            document.getElementById('themDong').addEventListener('click', function () { themDong(null); });
+
+            (du.length ? du : [null]).forEach(themDong);
+        })();
+    </script>
+}

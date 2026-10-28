@@ -1,0 +1,140 @@
+@model test.Models.PhanCongViewModel
+@{
+    ViewData["Title"] = "Phân công công việc";
+    var nv = Model.NhanVien;
+    var homNay = DateOnly.FromDateTime(DateTime.Today);
+}
+
+<div class="page-header">
+    <h2>📋 Phân công công việc</h2>
+    <p class="mb-0 text-muted">@nv.HoTen · @nv.ChucVu</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary mb-3">← Danh sách nhân viên</a>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white">
+                <thead>
+                    <tr>
+                        <th>Công việc</th>
+                        <th>Bắt đầu</th>
+                        <th>Kết thúc</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSach.Count == 0)
+                    {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Chưa giao việc nào.</td></tr>
+                    }
+                    @foreach (var pc in Model.DanhSach)
+                    {
+                        var dangLam = pc.NgayKetThuc == null || pc.NgayKetThuc >= homNay;
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@pc.CongViec.TenCV</div>
+                                @if (!string.IsNullOrEmpty(pc.CongViec.MoTa))
+                                {
+                                    <small class="text-muted">@pc.CongViec.MoTa</small>
+                                }
+                            </td>
+                            <td>@pc.NgayBatDau.ToString("dd/MM/yyyy")</td>
+                            <td>@(pc.NgayKetThuc?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td>
+                                @if (dangLam)
+                                {
+                                    <span class="badge bg-success">Đang làm</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Đã kết thúc</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (dangLam)
+                                {
+                                    <form asp-action="KetThucViec" method="post" class="d-inline">
+                                        <input type="hidden" name="maNV" value="@pc.MaNV" />
+                                        <input type="hidden" name="maCV" value="@pc.MaCV" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Kết thúc</button>
+                                    </form>
+                                }
+                                <form asp-action="GoPhanCong" method="post" class="d-inline"
+                                      onsubmit="return confirm('Gỡ phân công này?');">
+                                    <input type="hidden" name="maNV" value="@pc.MaNV" />
+                                    <input type="hidden" name="maCV" value="@pc.MaCV" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Gỡ</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card card-food p-3 mb-3">
+            <h6>Giao việc mới</h6>
+            @if (Model.CongViecChuaGiao.Count == 0)
+            {
+                <p class="text-muted mb-0">Chưa có công việc nào để giao. Hãy tạo công việc mới bên dưới.</p>
+            }
+            else
+            {
+                <form asp-action="GiaoViec" method="post">
+                    <input type="hidden" name="maNV" value="@nv.MaNV" />
+                    <div class="mb-2">
+                        <label class="form-label" for="maCV">Công việc</label>
+                        <select id="maCV" name="maCV" class="form-select" required>
+                            @foreach (var cv in Model.CongViecChuaGiao)
+                            {
+                                <option value="@cv.MaCV">@cv.TenCV</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="form-label" for="ngayBatDau">Ngày bắt đầu</label>
+                            <input type="date" id="ngayBatDau" name="ngayBatDau" value="@homNay.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label" for="ngayKetThuc">Ngày kết thúc</label>
+                            <input type="date" id="ngayKetThuc" name="ngayKetThuc" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-text mb-2">Để trống ngày kết thúc nếu công việc không có hạn.</div>
+                    <button type="submit" class="btn btn-restaurant">Giao việc</button>
+                </form>
+            }
+        </div>
+
+        <div class="card card-food p-3">
+            <h6>Tạo công việc mới</h6>
+            <form asp-action="TaoCongViec" method="post">
+                <input type="hidden" name="maNV" value="@nv.MaNV" />
+                <div class="mb-2">
+                    <label class="form-label" for="tenCV">Tên công việc</label>
+                    <input type="text" id="tenCV" name="tenCV" maxlength="100" class="form-control" required placeholder="Ví dụ: Dọn bàn ca tối" />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label" for="moTa">Mô tả (không bắt buộc)</label>
+                    <input type="text" id="moTa" name="moTa" maxlength="255" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-outline-secondary">Tạo công việc</button>
+            </form>
+        </div>
+    </div>
+</div>

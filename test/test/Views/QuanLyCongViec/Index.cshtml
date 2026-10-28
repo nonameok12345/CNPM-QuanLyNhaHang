@@ -1,0 +1,59 @@
+@model List<test.Models.CongViecDong>
+@{
+    ViewData["Title"] = "Công việc";
+}
+
+<div class="page-header">
+    <h2>📋 Công việc</h2>
+    <p class="mb-0 text-muted">@Model.Count công việc · dùng khi phân công nhân viên</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a asp-controller="QuanLyNhanVien" asp-action="Index" class="btn btn-outline-secondary">👥 Nhân viên</a>
+    <a asp-action="Create" class="btn btn-restaurant">+ Thêm công việc</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Tên công việc</th>
+                <th>Mô tả</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Người đang làm</th>
+                <th class="text-end" style="width:160px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="5" class="text-center text-muted py-4">Chưa có công việc nào.</td></tr>
+            }
+            @foreach (var d in Model)
+            {
+                <tr class="@(d.CongViec.TrangThai != test.Models.TrangThaiKho.HoatDong ? "table-secondary" : "")">
+                    <td class="fw-semibold">@d.CongViec.TenCV</td>
+                    <td>@(d.CongViec.MoTa ?? "—")</td>
+                    <td>@d.CongViec.TrangThai</td>
+                    <td class="text-center">@d.SoNguoiDangLam</td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@d.CongViec.MaCV" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@d.CongViec.MaCV" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa công việc @(d.CongViec.TenCV)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

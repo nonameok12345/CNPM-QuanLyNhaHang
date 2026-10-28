@@ -1,0 +1,75 @@
+@model List<test.Models.NguyenLieuDong>
+@{
+    ViewData["Title"] = "Nguyên liệu";
+    var tuKhoa = (string)ViewBag.TuKhoa;
+}
+
+<div class="page-header">
+    <h2>🥬 Nguyên liệu</h2>
+    <p class="mb-0 text-muted">@Model.Count nguyên liệu</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label mb-0" for="q">Tìm kiếm</label>
+            <input type="text" id="q" name="q" value="@tuKhoa" class="form-control" placeholder="Tên nguyên liệu" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-secondary">Tìm</button>
+            <a asp-action="Index" class="btn btn-link">Xóa lọc</a>
+        </div>
+    </form>
+    <div>
+        <a asp-controller="QuanLyKho" asp-action="Index" class="btn btn-outline-secondary">🏬 Kho</a>
+        <a asp-action="Create" class="btn btn-restaurant">+ Thêm nguyên liệu</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Tên nguyên liệu</th>
+                <th>Đơn vị</th>
+                <th class="text-end">Giá nhập</th>
+                <th class="text-end">Tổng tồn</th>
+                <th>Trạng thái</th>
+                <th class="text-end" style="width:160px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Không có nguyên liệu nào.</td></tr>
+            }
+            @foreach (var dong in Model)
+            {
+                var nl = dong.NguyenLieu;
+                <tr class="@(nl.TrangThai != test.Models.TrangThaiKho.HoatDong ? "table-secondary" : "")">
+                    <td class="fw-semibold">@nl.TenNL</td>
+                    <td>@nl.DonViTinh</td>
+                    <td class="text-end">@String.Format("{0:N0} đ", nl.GiaNhap)</td>
+                    <td class="text-end">@dong.TongTon.ToString("0.##") @nl.DonViTinh</td>
+                    <td>@nl.TrangThai</td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@nl.MaNL" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@nl.MaNL" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa nguyên liệu @(nl.TenNL)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

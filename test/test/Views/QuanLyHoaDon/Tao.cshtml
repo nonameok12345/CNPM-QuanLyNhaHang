@@ -1,0 +1,30 @@
+﻿@model List<test.Models.Ban>
+@{
+    ViewData["Title"] = "Lập hóa đơn tại bàn";
+}
+
+<div class="page-header">
+    <h2>🧾 Lập hóa đơn tại bàn</h2>
+    <p class="mb-0 text-muted">Dành cho khách đến trực tiếp, chưa đặt bàn trước.</p>
+</div>
+
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="card card-food p-4" style="max-width: 500px;">
+    <form asp-action="Tao" method="post">
+        <div class="mb-3">
+            <label class="form-label" for="maBan">Chọn bàn</label>
+            <select id="maBan" name="maBan" class="form-select" required>
+                @foreach (var b in Model)
+                {
+                    <option value="@b.MaBan">Bàn @b.SoBan (@b.SoChoNgoi chỗ)</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-restaurant">Tạo hóa đơn</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </form>
+</div>

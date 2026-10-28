@@ -1,0 +1,167 @@
+@model test.Models.PhieuNhapFormViewModel
+@{
+    ViewData["Title"] = "Lập phiếu nhập";
+    var duLieuDong = System.Text.Json.JsonSerializer.Serialize(Model.Dong);
+}
+
+<div class="page-header">
+    <h2>📥 Lập phiếu nhập kho</h2>
+</div>
+
+@if (Model.DanhSachKho.Count == 0)
+{
+    <div class="alert alert-warning">
+        Chưa có kho nào đang hoạt động. @if (User.IsInRole("QuanLy")) { <a asp-controller="QuanLyKho" asp-action="Create">Thêm kho</a> } else { <span>Hãy nhờ quản lý thêm kho.</span> }
+    </div>
+}
+@if (Model.DanhSachNguyenLieu.Count == 0)
+{
+    <div class="alert alert-warning">
+        Chưa có nguyên liệu nào đang sử dụng. @if (User.IsInRole("QuanLy")) { <a asp-controller="QuanLyNguyenLieu" asp-action="Create">Thêm nguyên liệu</a> } else { <span>Hãy nhờ quản lý thêm nguyên liệu.</span> }
+    </div>
+}
+
+<form asp-action="Tao" method="post" id="formNhap">
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-3 mb-3" style="max-width:640px">
+        <div class="col-md-7">
+            <label asp-for="MaKho" class="form-label">Nhập vào kho</label>
+            <select asp-for="MaKho" class="form-select">
+                <option value="">— Chọn kho —</option>
+                @foreach (var k in Model.DanhSachKho)
+                {
+                    <option value="@k.Value" selected="@(Model.MaKho?.ToString() == k.Value)">@k.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label asp-for="NgayNhap" class="form-label">Ngày nhập</label>
+            <input asp-for="NgayNhap" type="date" class="form-control" />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th style="width:40px">#</th>
+                    <th>Nguyên liệu</th>
+                    <th style="width:150px">Số lượng</th>
+                    <th style="width:160px">Đơn giá (đ)</th>
+                    <th style="width:170px">Hạn dùng</th>
+                    <th class="text-end" style="width:130px">Thành tiền</th>
+                    <th style="width:50px"></th>
+                </tr>
+            </thead>
+            <tbody id="dongNhap"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="text-end fw-semibold">Tổng tiền</td>
+                    <td class="text-end fw-bold" id="tongTien">0</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <button type="button" class="btn btn-outline-secondary mb-3" id="themDong">+ Thêm dòng</button>
+    <div>
+        <button type="submit" class="btn btn-restaurant">Lưu phiếu nhập</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+    <p class="text-muted small mt-3">
+        Mỗi dòng sẽ tạo thêm một lô trong kho đã chọn. Một nguyên liệu chỉ xuất hiện một lần trong phiếu;
+        nếu cùng nguyên liệu nhưng khác hạn dùng, hãy lập phiếu riêng.
+    </p>
+</form>
+
+<template id="mauDong">
+    <tr>
+        <td class="stt text-muted"></td>
+        <td>
+            <select data-f="MaNL" class="form-select">
+                <option value="">— Chọn nguyên liệu —</option>
+                @foreach (var nl in Model.DanhSachNguyenLieu)
+                {
+                    <option value="@nl.MaNL" data-gia="@nl.GiaNhap.ToString("0")" data-dvt="@nl.DonViTinh">@nl.TenNL (@nl.DonViTinh)</option>
+                }
+            </select>
+        </td>
+        <td><input data-f="SoLuong" type="number" min="0" step="0.01" class="form-control" /></td>
+        <td><input data-f="DonGia" type="number" min="0" step="1" class="form-control" /></td>
+        <td><input data-f="NgayHetHan" type="date" class="form-control" /></td>
+        <td class="text-end thanh-tien">0</td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger xoa-dong" title="Xóa dòng">✕</button></td>
+    </tr>
+</template>
+
+@section Scripts {
+    <script>
+        (function () {
+            const body = document.getElementById('dongNhap');
+            const mau = document.getElementById('mauDong');
+            const du = @Html.Raw(duLieuDong);
+
+            function giaTri(tr, ten) { return tr.querySelector('[data-f="' + ten + '"]'); }
+            function dinhDang(n) { return Math.round(n).toLocaleString('vi-VN'); }
+
+            // Đặt lại tên ô theo thứ tự dòng (Dong[0].MaNL, Dong[1].MaNL...) để máy chủ đọc được liền mạch
+            function danhSo() {
+                [...body.children].forEach(function (tr, i) {
+                    tr.querySelectorAll('[data-f]').forEach(function (el) {
+                        el.name = 'Dong[' + i + '].' + el.dataset.f;
+                    });
+                    tr.querySelector('.stt').textContent = i + 1;
+                });
+                capNhatTien();
+            }
+
+            function capNhatTien() {
+                let tong = 0;
+                [...body.children].forEach(function (tr) {
+                    const sl = parseFloat(giaTri(tr, 'SoLuong').value) || 0;
+                    const gia = parseFloat(giaTri(tr, 'DonGia').value) || 0;
+                    tr.querySelector('.thanh-tien').textContent = dinhDang(sl * gia);
+                    tong += sl * gia;
+                });
+                document.getElementById('tongTien').textContent = dinhDang(tong) + ' đ';
+            }
+
+            function themDong(d) {
+                const tr = mau.content.firstElementChild.cloneNode(true);
+                if (d) {
+                    giaTri(tr, 'MaNL').value = d.MaNL != null ? d.MaNL : '';
+                    giaTri(tr, 'SoLuong').value = d.SoLuong != null ? d.SoLuong : '';
+                    giaTri(tr, 'DonGia').value = d.DonGia != null ? d.DonGia : '';
+                    giaTri(tr, 'NgayHetHan').value = d.NgayHetHan != null ? d.NgayHetHan : '';
+                }
+                body.appendChild(tr);
+                danhSo();
+            }
+
+            body.addEventListener('click', function (e) {
+                const nut = e.target.closest('.xoa-dong');
+                if (!nut) return;
+                if (body.children.length > 1) nut.closest('tr').remove();
+                danhSo();
+            });
+
+            body.addEventListener('change', function (e) {
+                if (e.target.matches('[data-f="MaNL"]')) {
+                    // Tự điền giá nhập tham khảo nếu ô đơn giá còn trống
+                    const tr = e.target.closest('tr');
+                    const gia = giaTri(tr, 'DonGia');
+                    const opt = e.target.selectedOptions[0];
+                    if (!gia.value && opt && opt.dataset.gia) gia.value = opt.dataset.gia;
+                }
+                capNhatTien();
+            });
+            body.addEventListener('input', capNhatTien);
+
+            document.getElementById('themDong').addEventListener('click', function () { themDong(null); });
+
+            (du.length ? du : [null]).forEach(themDong);
+        })();
+    </script>
+}

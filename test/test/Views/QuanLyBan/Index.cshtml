@@ -1,0 +1,78 @@
+﻿@model List<test.Models.BanQuanLyDong>
+@{
+    ViewData["Title"] = "Quản lý bàn";
+}
+
+<div class="page-header">
+    <h2>🪑 Quản lý bàn</h2>
+    <p class="mb-0 text-muted">@Model.Count bàn</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex gap-2">
+        <a asp-controller="QuanLyDatBan" asp-action="Index" class="btn btn-outline-secondary">📅 Xem lịch đặt bàn</a>
+        <a asp-action="QR" class="btn btn-outline-secondary">📱 In QR tất cả bàn</a>
+    </div>
+    <a asp-action="Create" class="btn btn-restaurant">+ Thêm bàn mới</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Bàn</th>
+                <th>Số chỗ</th>
+                <th style="width:200px">Trạng thái</th>
+                <th>Lịch đặt sắp tới</th>
+                <th class="text-end" style="width:220px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dong in Model)
+            {
+                var ban = dong.Ban;
+                <tr class="@(ban.TrangThai == test.Models.TrangThaiBan.NgungSuDung ? "table-secondary" : "")">
+                    <td class="fw-semibold">Bàn @ban.SoBan</td>
+                    <td>@ban.SoChoNgoi</td>
+                    <td>
+                        <form asp-action="DoiTrangThai" asp-route-id="@ban.MaBan" method="post">
+                            <select name="trangThai" class="form-select form-select-sm" onchange="this.form.submit()">
+                                @foreach (var tt in test.Models.TrangThaiBan.TatCa)
+                                {
+                                    <option value="@tt" selected="@(ban.TrangThai == tt)">@tt</option>
+                                }
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        @if (dong.SoLichSapToi == 0)
+                        {
+                            <span class="text-muted">Không có</span>
+                        }
+                        else
+                        {
+                            <span>@dong.SoLichSapToi lịch, gần nhất @(dong.LichKeTiep!.Value.ToString("HH:mm dd/MM"))</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="QR" asp-route-id="@ban.MaBan" class="btn btn-sm btn-outline-primary">QR</a>
+                        <a asp-action="Edit" asp-route-id="@ban.MaBan" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@ban.MaBan" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa bàn @(ban.SoBan)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

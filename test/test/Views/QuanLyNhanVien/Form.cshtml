@@ -1,0 +1,95 @@
+@model test.Models.NhanVienFormViewModel
+@{
+    var laThem = Model.MaNV == 0;
+    ViewData["Title"] = laThem ? "Thêm nhân viên" : "Sửa nhân viên";
+}
+
+<div class="page-header">
+    <h2>👥 @ViewData["Title"]</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 640px;">
+    <form asp-action="@(laThem ? "Create" : "Edit")" method="post" autocomplete="off">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="MaNV" />
+
+        <div class="mb-3">
+            <label asp-for="HoTen" class="form-label">Họ tên</label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="ChucVu" class="form-label">Chức vụ</label>
+                <select asp-for="ChucVu" class="form-select">
+                    @foreach (var cv in Model.DanhSachChucVu)
+                    {
+                        <option value="@cv" selected="@(Model.ChucVu == cv)">@cv</option>
+                    }
+                </select>
+                <span asp-validation-for="ChucVu" class="text-danger"></span>
+                <div class="form-text">Chức vụ "Quản lý" có toàn quyền vào trang quản lý.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="SDT" class="form-label">Số điện thoại</label>
+                <input asp-for="SDT" class="form-control" placeholder="Ví dụ: 0901234567" />
+                <span asp-validation-for="SDT" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="NgayVaoLam" class="form-label">Ngày vào làm</label>
+                <input asp-for="NgayVaoLam" type="date" class="form-control" />
+                <span asp-validation-for="NgayVaoLam" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Luong" class="form-label">Lương (đ)</label>
+                <input asp-for="Luong" type="number" min="0" step="1000" class="form-control" />
+                <span asp-validation-for="Luong" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MaKho" class="form-label">Kho phụ trách</label>
+            <select asp-for="MaKho" class="form-select">
+                <option value="">— Không phụ trách kho —</option>
+                @foreach (var kho in Model.DanhSachKho)
+                {
+                    <option value="@kho.Value" selected="@(Model.MaKho?.ToString() == kho.Value)">@kho.Text</option>
+                }
+            </select>
+            <span asp-validation-for="MaKho" class="text-danger"></span>
+        </div>
+
+        <hr />
+        <h6 class="mb-3">Tài khoản đăng nhập</h6>
+
+        <div class="mb-3">
+            <label asp-for="TaiKhoan" class="form-label">Tài khoản</label>
+            <input asp-for="TaiKhoan" class="form-control" />
+            <span asp-validation-for="TaiKhoan" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="MatKhau" class="form-label">@(laThem ? "Mật khẩu" : "Mật khẩu mới")</label>
+                <input asp-for="MatKhau" type="password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="MatKhau" class="text-danger"></span>
+                @if (!laThem)
+                {
+                    <div class="form-text">Để trống nếu không muốn đổi mật khẩu.</div>
+                }
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="NhapLaiMatKhau" class="form-label">Nhập lại mật khẩu</label>
+                <input asp-for="NhapLaiMatKhau" type="password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="NhapLaiMatKhau" class="text-danger"></span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-restaurant">@(laThem ? "Thêm nhân viên" : "Lưu thay đổi")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </form>
+</div>

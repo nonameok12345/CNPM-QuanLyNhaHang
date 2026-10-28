@@ -1,0 +1,177 @@
+﻿@model IEnumerable<test.Models.MonAn>
+
+<div class="page-header text-center">
+    <h1>🍜 Thực Đơn Nhà Hàng</h1>
+    <p class="mb-0">@Model.Count() món ăn đang phục vụ</p>
+</div>
+
+<form asp-controller="MonAn"
+      asp-action="Index"
+      method="get"
+      class="row g-2 justify-content-center my-4">
+
+    <div class="col-12 col-md-6">
+        <input type="search"
+               name="tuKhoa"
+               value="@ViewBag.TuKhoa"
+               class="form-control"
+               placeholder="Nhập tên món ăn, ví dụ: Nem nướng..."
+               aria-label="Tìm kiếm món ăn" />
+    </div>
+
+    @if (ViewBag.MaDanhMuc != null)
+    {
+        <input type="hidden"
+               name="maDanhMuc"
+               value="@ViewBag.MaDanhMuc" />
+    }
+
+    <div class="col-auto">
+        <button type="submit" class="btn btn-restaurant">
+            🔍 Tìm món
+        </button>
+    </div>
+
+    <div class="col-auto">
+        <a asp-controller="MonAn"
+           asp-action="Index"
+           asp-route-maDanhMuc="@ViewBag.MaDanhMuc"
+           class="btn btn-outline-secondary">
+            Xóa tìm kiếm
+        </a>
+    </div>
+
+</form>
+
+
+@* Thông báo "đã thêm vào giỏ", tự tắt sau vài giây *@
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div id="thong-bao-gio" class="alert alert-success shadow"
+         style="position:fixed; bottom:20px; right:20px; z-index:1080; max-width:360px;">
+        <div>@thongBao</div>
+        <a asp-controller="GioHang" asp-action="Index" class="fw-bold">Xem giỏ hàng →</a>
+    </div>
+    <script>
+        setTimeout(function () {
+            var el = document.getElementById('thong-bao-gio');
+            if (el) el.remove();
+        }, 5000);
+    </script>
+}
+
+<div class="row g-4">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 col-sm-6" id="mon-@item.MaMon">
+            <div class="card card-food h-100">
+                @if (!string.IsNullOrEmpty(item.HinhAnh))
+                {
+                    <img src="@item.HinhAnh" alt="@item.TenMon" class="food-image" />
+                }
+                else
+                {
+                    <div class="food-icon">🍽️</div>
+                }
+                <div class="card-body">
+                    <span class="badge-category">@(item.MaDanhMucNavigation?.TenDanhMuc ?? "Chưa phân loại")</span>
+                    <h5 class="mt-2 mb-1">@item.TenMon</h5>
+                    <p class="price-tag mb-0">@String.Format("{0:N0}", item.Gia) đ</p>
+
+                    <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex gap-2 mt-3">
+                        <input type="hidden" name="maMon" value="@item.MaMon" />
+                        <input type="hidden" name="returnUrl" value="@(Context.Request.Path.Value + Context.Request.QueryString.Value)" />
+                        <input type="number" name="soLuong" value="1" min="1" max="20" class="form-control" style="width:80px" />
+                        <button type="submit" class="btn btn-restaurant flex-grow-1">+ Thêm vào giỏ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.Any())
+{
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 col-sm-6" id="mon-@item.MaMon">
+                <div class="card card-food h-100">
+
+                    @if (!string.IsNullOrEmpty(item.HinhAnh))
+                    {
+                        <img src="@item.HinhAnh"
+                             alt="@item.TenMon"
+                             class="food-image" />
+                    }
+                    else
+                    {
+                        <div class="food-icon">🍽️</div>
+                    }
+
+                    <div class="card-body">
+                        <span class="badge-category">
+                            @(item.MaDanhMucNavigation?.TenDanhMuc
+                              ?? "Chưa phân loại")
+                        </span>
+
+                        <h5 class="mt-2 mb-1">@item.TenMon</h5>
+
+                        <p class="price-tag mb-0">
+                            @String.Format("{0:N0}", item.Gia) đ
+                        </p>
+
+                        <form asp-controller="GioHang"
+                              asp-action="Them"
+                              method="post"
+                              class="d-flex gap-2 mt-3">
+
+                            <input type="hidden"
+                                   name="maMon"
+                                   value="@item.MaMon" />
+
+                            <input type="hidden"
+                                   name="returnUrl"
+                                   value="@(Context.Request.Path.Value + Context.Request.QueryString.Value)" />
+
+                            <input type="number"
+                                   name="soLuong"
+                                   value="1"
+                                   min="1"
+                                   max="20"
+                                   class="form-control"
+                                   style="width:80px" />
+
+                            <button type="submit"
+                                    class="btn btn-restaurant flex-grow-1">
+                                + Thêm vào giỏ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-warning text-center my-4">
+        <p class="mb-2">
+            <strong>Không tìm thấy món ăn phù hợp!</strong>
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(ViewBag.TuKhoa as string))
+        {
+            <p class="mb-2">
+                Từ khóa: "@ViewBag.TuKhoa"
+            </p>
+        }
+
+        <a asp-controller="MonAn"
+           asp-action="Index"
+           asp-route-maDanhMuc="@ViewBag.MaDanhMuc"
+           class="alert-link">
+            Xem lại thực đơn
+        </a>
+    </div>
+}

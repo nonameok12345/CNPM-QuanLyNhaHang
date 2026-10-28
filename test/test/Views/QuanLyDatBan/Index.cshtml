@@ -1,0 +1,128 @@
+﻿@model List<test.Models.DatBanQuanLyDong>
+@{
+    ViewData["Title"] = "Quản lý đặt bàn";
+    var ngay = (DateTime)ViewBag.Ngay;
+    var ngayChuoi = ngay.ToString("yyyy-MM-dd");
+    var trangThaiLoc = (string?)ViewBag.TrangThai;
+    var trangThaiList = new[]
+    {
+        test.Models.TrangThaiDatBan.ChoXacNhan,
+        test.Models.TrangThaiDatBan.DaXacNhan,
+        test.Models.TrangThaiDatBan.DaHuy
+    };
+}
+
+<div class="page-header">
+    <h2>📅 Quản lý đặt bàn</h2>
+    <p class="mb-0 text-muted">Ngày @ngay.ToString("dd/MM/yyyy") · @Model.Count lịch</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label mb-0" for="ngay">Ngày</label>
+        <input type="date" id="ngay" name="ngay" value="@ngayChuoi" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0" for="trangThai">Trạng thái</label>
+        <select id="trangThai" name="trangThai" class="form-select">
+            <option value="">Tất cả</option>
+            @foreach (var tt in trangThaiList)
+            {
+                <option value="@tt" selected="@(trangThaiLoc == tt)">@tt</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-restaurant">Xem</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Hôm nay</a>
+    </div>
+    <div class="col text-end">
+        <a asp-controller="QuanLyBan" asp-action="Index" class="btn btn-outline-secondary">🪑 Quản lý bàn</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <p class="fs-5">Không có lịch đặt bàn nào trong ngày này.</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Giờ</th>
+                    <th>Bàn</th>
+                    <th>Khách hàng</th>
+                    <th>Số người</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model)
+                {
+                    var daHuy = d.TrangThai == test.Models.TrangThaiDatBan.DaHuy;
+                    var daHetGio = d.NgayGio.AddHours(test.Models.QuyDinhDatBan.ThoiLuongGio) <= DateTime.Now;
+                    var choXacNhan = d.TrangThai == test.Models.TrangThaiDatBan.ChoXacNhan;
+                    var coThaoTac = !daHuy && !daHetGio;
+                    <tr>
+                        <td class="fw-semibold">@d.NgayGio.ToString("HH:mm")</td>
+                        <td>Bàn @d.SoBan</td>
+                        <td>
+                            @d.TenKhach<br />
+                            <small class="text-muted">@d.SDTKhach</small>
+                        </td>
+                        <td>@d.SoNguoi</td>
+                        <td>
+                            @if (daHuy)
+                            {
+                                <span class="badge bg-secondary">Đã hủy</span>
+                            }
+                            else if (daHetGio)
+                            {
+                                <span class="badge bg-secondary">Đã qua</span>
+                            }
+                            else if (choXacNhan)
+                            {
+                                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">@d.TrangThai</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (coThaoTac && choXacNhan)
+                            {
+                                <form asp-action="XacNhan" asp-route-id="@d.MaDatBan" asp-route-ngay="@ngayChuoi"
+                                      method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Xác nhận</button>
+                                </form>
+                            }
+                            @if (coThaoTac)
+                            {
+                                <form asp-action="Huy" asp-route-id="@d.MaDatBan" asp-route-ngay="@ngayChuoi"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Hủy lịch đặt bàn này?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Hủy</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

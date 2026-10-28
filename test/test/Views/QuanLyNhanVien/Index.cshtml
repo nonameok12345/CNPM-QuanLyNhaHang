@@ -1,0 +1,99 @@
+@model List<test.Models.NhanVienDong>
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+    var tuKhoa = (string)ViewBag.TuKhoa;
+    var chucVuLoc = (string)ViewBag.ChucVu;
+    var danhSachChucVu = (List<string>)ViewBag.DanhSachChucVu;
+}
+
+<div class="page-header">
+    <h2>👥 Quản lý nhân viên</h2>
+    <p class="mb-0 text-muted">@Model.Count nhân viên</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label mb-0" for="q">Tìm kiếm</label>
+            <input type="text" id="q" name="q" value="@tuKhoa" class="form-control" placeholder="Tên, tài khoản, SĐT" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label mb-0" for="chucVu">Chức vụ</label>
+            <select id="chucVu" name="chucVu" class="form-select">
+                <option value="">Tất cả</option>
+                @foreach (var cv in danhSachChucVu)
+                {
+                    <option value="@cv" selected="@(chucVuLoc == cv)">@cv</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-secondary">Lọc</button>
+            <a asp-action="Index" class="btn btn-link">Xóa lọc</a>
+        </div>
+    </form>
+    <a asp-action="Create" class="btn btn-restaurant">+ Thêm nhân viên</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Họ tên</th>
+                <th>Chức vụ</th>
+                <th>SĐT</th>
+                <th>Tài khoản</th>
+                <th>Ngày vào làm</th>
+                <th class="text-end">Lương</th>
+                <th>Kho phụ trách</th>
+                <th class="text-center">Việc đang làm</th>
+                <th class="text-end" style="width:230px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">Không có nhân viên nào.</td></tr>
+            }
+            @foreach (var dong in Model)
+            {
+                var nv = dong.NhanVien;
+                <tr>
+                    <td class="fw-semibold">
+                        @nv.HoTen
+                        @if (dong.LaTaiKhoanHienTai)
+                        {
+                            <span class="badge bg-info text-dark">Bạn</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="badge @(test.Models.VaiTro.TuChucVu(nv.ChucVu) == test.Models.VaiTro.QuanLy ? "bg-warning text-dark" : "bg-secondary")">@nv.ChucVu</span>
+                    </td>
+                    <td>@(nv.SDT ?? "—")</td>
+                    <td>@nv.TaiKhoan</td>
+                    <td>@nv.NgayVaoLam.ToString("dd/MM/yyyy")</td>
+                    <td class="text-end">@(nv.Luong == null ? "—" : String.Format("{0:N0} đ", nv.Luong))</td>
+                    <td>@(nv.Kho?.TenKho ?? "—")</td>
+                    <td class="text-center">@dong.SoViecDangLam</td>
+                    <td class="text-end">
+                        <a asp-action="PhanCong" asp-route-id="@nv.MaNV" class="btn btn-sm btn-outline-primary">Phân công</a>
+                        <a asp-action="Edit" asp-route-id="@nv.MaNV" class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <form asp-action="Delete" asp-route-id="@nv.MaNV" method="post" class="d-inline"
+                              onsubmit="return confirm('Xóa nhân viên @(nv.HoTen)?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" disabled="@dong.LaTaiKhoanHienTai">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

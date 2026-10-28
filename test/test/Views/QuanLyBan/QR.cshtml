@@ -1,0 +1,80 @@
+﻿@model List<test.Models.Ban>
+@{
+    ViewData["Title"] = "Mã QR gọi món";
+}
+
+<style>
+    @@media print {
+        .no-print, .navbar, .site-footer { display: none !important; }
+        .qr-card { page-break-inside: avoid; }
+    }
+</style>
+
+<div class="page-header no-print">
+    <h2>📱 Mã QR gọi món tại bàn</h2>
+    <p class="mb-0 text-muted">In ra và dán lên từng bàn. Khách quét QR là vào đúng trang gọi món của bàn đó.</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success no-print">@thongBao</div>
+}
+
+<div class="card card-food p-3 mb-4 no-print">
+    <label for="gocUrl" class="form-label fw-bold">Địa chỉ website mà điện thoại của khách mở được</label>
+    <input id="gocUrl" class="form-control" value="@ViewBag.GocUrl" />
+    <div class="form-text">
+        Không dùng <code>localhost</code> vì điện thoại sẽ không vào được. Dùng địa chỉ IP trong mạng quán
+        (vd <code>http://192.168.1.10:5011</code>) hoặc tên miền thật. Đổi ô này thì QR bên dưới tự vẽ lại.
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button type="button" class="btn btn-restaurant" onclick="window.print()">🖨️ In</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">← Về danh sách bàn</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    @foreach (var b in Model)
+    {
+        <div class="col-6 col-md-4 qr-card">
+            <div class="card card-food text-center p-3">
+                <h4 class="mb-2">Bàn @b.SoBan</h4>
+                <div class="qr d-flex justify-content-center" data-token="@b.MaQR"></div>
+                <p class="mt-2 mb-1 fw-semibold">Quét mã để gọi món</p>
+                <small class="text-muted text-break qr-link no-print"></small>
+                <form asp-action="DoiMaQR" asp-route-id="@b.MaBan" method="post" class="no-print"
+                      onsubmit="return confirm('Đổi mã QR của bàn @(b.SoBan)? QR cũ đã in sẽ không dùng được nữa.');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger mt-2">Đổi mã QR</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const o = document.getElementById('gocUrl');
+
+        // Nhớ địa chỉ đã nhập cho lần in sau
+        try {
+            const luu = localStorage.getItem('goc-url-qr');
+            if (luu) o.value = luu;
+        } catch (e) { }
+
+        function ve() {
+            const goc = o.value.trim().replace(/\/+$/, '');
+            try { localStorage.setItem('goc-url-qr', o.value.trim()); } catch (e) { }
+
+            document.querySelectorAll('.qr').forEach(function (el) {
+                el.innerHTML = '';
+                const url = goc + '/ban/' + el.dataset.token;
+                new QRCode(el, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+                el.parentElement.querySelector('.qr-link').textContent = url;
+            });
+        }
+
+        o.addEventListener('input', ve);
+        ve();
+    </script>
+}

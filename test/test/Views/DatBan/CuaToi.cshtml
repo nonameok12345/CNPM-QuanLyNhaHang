@@ -1,0 +1,81 @@
+﻿@model List<test.Models.DatBan>
+@{
+    ViewData["Title"] = "Lịch đặt bàn của tôi";
+}
+
+<div class="page-header">
+    <h2>📋 Lịch đặt bàn của tôi</h2>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <p class="fs-5">Bạn chưa có lịch đặt bàn nào.</p>
+        <a asp-action="Index" class="btn btn-restaurant">Đặt bàn ngay</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Bàn</th>
+                    <th>Số người</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model)
+                {
+                    var daHuy = d.TrangThai == test.Models.TrangThaiDatBan.DaHuy;
+                    var daQua = d.NgayGio.AddHours(test.Models.QuyDinhDatBan.ThoiLuongGio) <= DateTime.Now;
+                    <tr>
+                        <td>@d.NgayGio.ToString("HH:mm dd/MM/yyyy")</td>
+                        <td>Bàn @d.Ban.SoBan</td>
+                        <td>@d.SoNguoi</td>
+                        <td>
+                            @if (daHuy)
+                            {
+                                <span class="badge bg-secondary">Đã hủy</span>
+                            }
+                            else if (daQua)
+                            {
+                                <span class="badge bg-secondary">Đã qua</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">@d.TrangThai</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (!daHuy && !daQua)
+                            {
+                                <a asp-controller="MonAn" asp-action="Index" class="btn btn-sm btn-outline-warning">Chọn món</a>
+                            }
+                            @if (!daHuy && d.NgayGio > DateTime.Now)
+                            {
+                                <form asp-action="Huy" asp-route-id="@d.MaDatBan" method="post" class="d-inline"
+                                      onsubmit="return confirm('Hủy lịch đặt bàn này? Món đã gọi cho lịch này cũng sẽ bị hủy.');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Hủy</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <a asp-action="Index" class="btn btn-restaurant">+ Đặt bàn mới</a>
+}

@@ -1,0 +1,27 @@
+﻿@model test.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="page-header">
+    <h2>🔐 Đăng nhập nhân viên</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 420px;">
+    <form asp-action="Login" method="post">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tài khoản</label>
+            <input asp-for="TaiKhoan" class="form-control" autocomplete="username" />
+            <span asp-validation-for="TaiKhoan" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mật khẩu</label>
+            <input asp-for="MatKhau" type="password" class="form-control" autocomplete="current-password" />
+            <span asp-validation-for="MatKhau" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-restaurant w-100">Đăng nhập</button>
+    </form>
+</div>

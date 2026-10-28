@@ -1,0 +1,90 @@
+@model List<test.Models.CongThucMonDong>
+@{
+    ViewData["Title"] = "Công thức món";
+    var tuKhoa = (string)ViewBag.TuKhoa;
+    var chuaCo = (bool)ViewBag.ChuaCo;
+}
+
+<div class="page-header">
+    <h2>🍲 Công thức món</h2>
+    <p class="mb-0 text-muted">@Model.Count món · công thức dùng để tự trừ tồn kho khi thanh toán hóa đơn</p>
+</div>
+
+@if (TempData["ThongBao"] is string thongBao)
+{
+    <div class="alert alert-success">@thongBao</div>
+}
+@if (TempData["Loi"] is string loi)
+{
+    <div class="alert alert-danger">@loi</div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label mb-0" for="q">Tìm món</label>
+        <input type="text" id="q" name="q" value="@tuKhoa" class="form-control" placeholder="Tên món" />
+    </div>
+    <div class="col-auto">
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="chuaCo" name="chuaCo" value="true" checked="@chuaCo" />
+            <label class="form-check-label" for="chuaCo">Chỉ món chưa có công thức</label>
+        </div>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Lọc</button>
+        <a asp-action="Index" class="btn btn-link">Xóa lọc</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead>
+            <tr>
+                <th>Món</th>
+                <th class="text-end">Giá bán</th>
+                <th class="text-center">Số nguyên liệu</th>
+                <th class="text-end">Giá vốn ước tính</th>
+                <th class="text-end">Lãi gộp</th>
+                <th class="text-end" style="width:120px"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Không có món nào.</td></tr>
+            }
+            @foreach (var d in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@d.MonAn.TenMon</td>
+                    <td class="text-end">@String.Format("{0:N0} đ", d.GiaBan)</td>
+                    <td class="text-center">
+                        @if (d.SoNguyenLieu == 0)
+                        {
+                            <span class="badge bg-warning text-dark">Chưa có</span>
+                        }
+                        else
+                        {
+                            @d.SoNguyenLieu
+                        }
+                    </td>
+                    <td class="text-end">@(d.SoNguyenLieu == 0 ? "—" : String.Format("{0:N0} đ", d.GiaVon))</td>
+                    <td class="text-end">
+                        @if (d.SoNguyenLieu == 0 || d.GiaBan <= 0)
+                        {
+                            <span>—</span>
+                        }
+                        else
+                        {
+                            <span class="@(d.GiaBan < d.GiaVon ? "text-danger" : "")">@String.Format("{0:N0}%", (d.GiaBan - d.GiaVon) / d.GiaBan * 100)</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@d.MonAn.MaMon" class="btn btn-sm btn-outline-primary">@(d.SoNguyenLieu == 0 ? "Nhập công thức" : "Sửa")</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<p class="text-muted small">Giá vốn ước tính = tổng (số lượng x giá nhập tham khảo trong trang Nguyên liệu).</p>

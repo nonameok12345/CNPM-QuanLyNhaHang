@@ -1,0 +1,47 @@
+@model test.Models.KhachHangFormViewModel
+@{
+    ViewData["Title"] = "Sửa khách hàng";
+}
+
+<div class="page-header">
+    <h2>🧑‍🤝‍🧑 Sửa khách hàng</h2>
+</div>
+
+<div class="card card-food p-4" style="max-width: 560px;">
+    <form asp-action="Edit" method="post" autocomplete="off">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="MaKH" />
+
+        <div class="mb-3">
+            <label asp-for="HoTen" class="form-label">Họ tên</label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="SDT" class="form-label">Số điện thoại (tên đăng nhập)</label>
+            <input asp-for="SDT" class="form-control" />
+            <span asp-validation-for="SDT" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+            <input asp-for="DiaChi" class="form-control" />
+            <span asp-validation-for="DiaChi" class="text-danger"></span>
+        </div>
+
+        <hr />
+        <div class="mb-3">
+            <label asp-for="MatKhauMoi" class="form-label">@(Model.CoTaiKhoan ? "Đặt mật khẩu mới" : "Tạo mật khẩu (khách chưa có tài khoản)")</label>
+            <input asp-for="MatKhauMoi" type="password" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="MatKhauMoi" class="text-danger"></span>
+            <div class="form-text">Để trống nếu không muốn thay đổi.</div>
+        </div>
+
+        <button type="submit" class="btn btn-restaurant">Lưu thay đổi</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </form>
+</div>
