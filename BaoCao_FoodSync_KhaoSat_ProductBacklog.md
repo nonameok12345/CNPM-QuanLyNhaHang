@@ -21,9 +21,9 @@ Từ nhu cầu người dùng đến User Story, Acceptance Criteria và Product
 | Hạng mục | Nội dung |
 |---|---|
 | Tên dự án | FoodSync – Website tổng hợp order và quản lý quán ăn |
-| Nhóm thực hiện | [Điền tên nhóm] |
+| Nhóm thực hiện | Nhóm 1 |
 | Thành viên | Phạm Tiến Sơn, Nguyễn Duy Anh, Nguyễn Nhật Tân, Đỗ Anh Tài |
-| Môn học / Giảng viên | Công nghệ phần mềm – CMC University / [Điền tên giảng viên] |
+| Môn học / Giảng viên | Công nghệ phần mềm – CMC University / Nguyễn Thị Vân Anh |
 | Nền tảng kỹ thuật | ASP.NET Core MVC, Entity Framework Core, SQL Server (website quản lý nhà hàng của nhóm) |
 | Thời gian thực hiện | 2026 |
 
